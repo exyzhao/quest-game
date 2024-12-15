@@ -11,6 +11,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "ws": "^8.18.0"
+    "express": "^4.21.2",
+    "ws": "^8.18.0",
+    "wscat": "^6.0.1"
   }
 }
