@@ -1,7 +1,8 @@
 import { getRolesForPlayerCount } from '../game/roles'
 import { GAME_STATE_UPDATE } from './events'
-import { shuffle } from '../utils/shuffle'
 import { WebSocketServer, WebSocket } from 'ws'
+
+import * as R from 'remeda'
 
 interface MyWebSocket extends WebSocket {
   lobbyId?: string
@@ -104,14 +105,14 @@ export const handleStartGame = (
         : role
     )
 
-    const shuffledRoles = shuffle(roles)
+    const shuffledRoles = R.shuffle(roles)
     lobby.players = lobby.players.map((player, index) => ({
       ...player,
       role: shuffledRoles[index],
     }))
 
     // Set first quest leader
-    const questLeader = shuffle(lobby.players)[0]
+    const questLeader = R.shuffle(lobby.players)[0]
     lobby.firstQuestLeader = questLeader.id
 
     lobby.phase = 'IN_GAME'
@@ -135,7 +136,8 @@ export const handleStartGame = (
       const leaderAlignment =
         questLeader.role.includes('Morgan le Fey') ||
         questLeader.role.includes('Blind Hunter') ||
-        questLeader.role.includes('Minion of Mordred')
+        questLeader.role.includes('Minion of Mordred') ||
+        questLeader.role.includes('Troublemaker')
           ? 'Evil'
           : 'Good'
       sendPrivateMessage(wss, cleric.id, {

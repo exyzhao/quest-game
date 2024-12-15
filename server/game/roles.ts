@@ -1,13 +1,13 @@
-import { shuffle } from '../utils/shuffle'
+import * as R from 'remeda'
 
 export const getRolesForPlayerCount = (playerCount: number): string[] => {
   if (playerCount === 4) {
     const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
-    const selectedGoodRoles = shuffle(goodRoles).slice(0, 2)
+    const selectedGoodRoles = R.shuffle(goodRoles).slice(0, 2)
     return ['Morgan le Fey', 'Blind Hunter', ...selectedGoodRoles]
   } else if (playerCount === 5) {
     const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
-    const selectedGoodRoles = shuffle(goodRoles).slice(0, 2)
+    const selectedGoodRoles = R.shuffle(goodRoles).slice(0, 2)
     return [
       'Morgan le Fey',
       'Blind Hunter',
