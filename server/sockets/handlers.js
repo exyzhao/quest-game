@@ -75,7 +75,7 @@ const handleStartGame = (ws, message, wss) => {
   }
 
   try {
-    const roles = getRolesForPlayerCount(playerCount)
+    let roles = getRolesForPlayerCount(playerCount)
     roles = roles.map((role) =>
       role === 'Special Role'
         ? Math.random() < 0.5
@@ -85,7 +85,7 @@ const handleStartGame = (ws, message, wss) => {
     )
 
     const shuffledRoles = shuffle(roles)
-    lobby.plaers = lobby.players.map((player, index) => ({
+    lobby.players = lobby.players.map((player, index) => ({
       ...player,
       role: shuffledRoles[index],
     }))
@@ -101,7 +101,7 @@ const handleStartGame = (ws, message, wss) => {
     }
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,
-      state: sanitizedlobby,
+      state: sanitizedLobby,
     })
 
     // Send each player their role privately
