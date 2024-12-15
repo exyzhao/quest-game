@@ -65,10 +65,10 @@ const handleStartGame = (ws, message, wss) => {
   }
 
   const playerCount = lobby.players.length
-  if (playerCount < 6 || playerCount > 10) {
+  if (playerCount < 4 || playerCount > 10) {
     ws.send(
       JSON.stringify({
-        error: 'Player count must be between 6 and 10 players.',
+        error: 'Player count must be between 4 and 10 players.',
       })
     )
     return

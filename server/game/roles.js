@@ -1,21 +1,19 @@
+const { shuffle } = require('../utils/shuffle')
+
 module.exports = {
   getRolesForPlayerCount: (playerCount) => {
     if (playerCount === 4) {
-      return [
-        'Morgan le Fey',
-        'Blind Hunter',
-        'Cleric',
-        'Youth',
-        'Loyal Servant of Arthur',
-      ]
+      const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
+      const selectedGoodRoles = shuffle(goodRoles).slice(0, 2)
+      return ['Morgan le Fey', 'Blind Hunter', ...selectedGoodRoles]
     } else if (playerCount === 5) {
+      const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
+      const selectedGoodRoles = shuffle(goodRoles).slice(0, 2)
       return [
         'Morgan le Fey',
         'Blind Hunter',
         'Minion of Mordred',
-        'Cleric',
-        'Youth',
-        'Loyal Servant of Arthur',
+        ...selectedGoodRoles,
       ]
     } else if (playerCount === 6) {
       return [
