@@ -1,5 +1,0 @@
-module.exports = {
-  JOIN_GAME: 'JOIN_GAME',
-  START_GAME: 'START_GAME',
-  GAME_STATE_UPDATE: 'GAME_STATE_UPDATE',
-}
