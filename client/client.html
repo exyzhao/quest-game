@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Avalon Client Test</title>
+    <style>
+      #messages {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        background-color: #f9f9f9;
+        max-width: 600px;
+        min-height: 200px;
+      }
+      .message {
+        margin: 5px 0;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Avalon Client Test</h1>
+    <div id="messages">
+      <p><em>Messages will appear here...</em></p>
+    </div>
+    <button id="startGameButton">Start Game</button>
+
+    <script>
+      // Connect to the WebSocket server
+      const ws = new WebSocket('ws://localhost:3000')
+
+      // Get the messages div and button
+      const messagesDiv = document.getElementById('messages')
+      const startGameButton = document.getElementById('startGameButton')
+
+      // Utility function to display a message
+      const displayMessage = (message) => {
+        const messageElement = document.createElement('p')
+        messageElement.classList.add('message')
+        messageElement.textContent = message
+        messagesDiv.appendChild(messageElement)
+      }
+
+      // Handle WebSocket open
+      ws.onopen = () => {
+        console.log('Connected to the server')
+        displayMessage('Connected to the server')
+
+        // Send a join message after connecting
+        const playerName = prompt('Enter your player name:')
+        ws.send(
+          JSON.stringify({
+            event: 'JOIN_GAME',
+            lobbyId: 'lobby123',
+            playerName,
+          })
+        )
+      }
+
+      // Handle WebSocket message
+      ws.onmessage = (event) => {
+        console.log('Received:', event.data)
+        displayMessage(`Received: ${event.data}`)
+      }
+
+      // Handle WebSocket error
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error)
+        displayMessage('WebSocket error occurred')
+      }
+
+      // Handle WebSocket close
+      ws.onclose = () => {
+        console.log('Disconnected from the server')
+        displayMessage('Disconnected from the server')
+      }
+
+      // Add an event listener to the "Start Game" button
+      startGameButton.addEventListener('click', () => {
+        ws.send(JSON.stringify({ event: 'START_GAME', lobbyId: 'lobby123' }))
+        displayMessage('Sent: START_GAME')
+      })
+    </script>
+  </body>
+</html>
