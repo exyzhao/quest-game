@@ -31,7 +31,7 @@ export const selectTeam = (
   lobby.currentTeam = selectedPlayerIds
   lobby.magicTokenHolder = magicTokenHolder
 
-  advancePhase(lobby)
+  // advancePhase(lobby)
 }
 
 /**
@@ -84,5 +84,5 @@ export function executeQuest(lobby: Lobby) {
     lobby.currentRound++
   }
 
-  advancePhase(lobby)
+  // advancePhase(lobby)
 }

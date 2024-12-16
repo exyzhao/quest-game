@@ -1,4 +1,5 @@
-import { Lobby } from './types'
+import { broadcastToLobby } from '../sockets/handlers'
+import { MyWebSocketServer, Lobby } from './types'
 
 export type GamePhase =
   | 'LOBBY'
@@ -9,8 +10,11 @@ export type GamePhase =
   | 'ENDGAME_DISCUSSION'
   | 'GAME_OVER'
 
-export const advancePhase = (lobby: Lobby) => {
-  console.log(lobby)
+export const advancePhase = (
+  lobby: Lobby,
+  wss: MyWebSocketServer,
+  lobbyId: string
+) => {
   switch (lobby.phase) {
     case 'LOBBY':
       lobby.phase = 'TEAM_SELECTION'
@@ -38,6 +42,13 @@ export const advancePhase = (lobby: Lobby) => {
     default:
       throw new Error(`Unknown phase: ${lobby.phase}`)
   }
+
+  console.log(lobby)
+
+  broadcastToLobby(wss, lobbyId, {
+    event: 'GAME_STATE_UPDATE',
+    state: lobby,
+  })
 }
 
 const isGameOver = (lobby: Lobby) => false

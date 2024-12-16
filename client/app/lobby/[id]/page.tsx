@@ -8,25 +8,26 @@ export default function Lobby() {
   const { isConnected, messages, sendMessage } = useWebSocketContext()
   const [lobbyState, setLobbyState] = useState<any>(null)
   const pathname = usePathname()
-  const lobbyId = pathname.split('/').pop() // Extract lobby ID from URL
+  const lobbyId = pathname.split('/').pop() || ''
+  const router = useRouter()
 
   useEffect(() => {
-    // Check for the latest message and parse it
     if (messages.length > 0) {
       const latestMessage = messages[messages.length - 1]
       try {
-        const parsedMessage = JSON.parse(latestMessage)
-        if (
-          parsedMessage.event === 'GAME_STATE_UPDATE' &&
-          parsedMessage.state
-        ) {
-          setLobbyState(parsedMessage.state) // Update the lobby state
+        const parsed = JSON.parse(latestMessage)
+        if (parsed.event === 'GAME_STATE_UPDATE' && parsed.state) {
+          setLobbyState(parsed.state)
+
+          if (parsed.state.phase !== 'LOBBY') {
+            router.push(`/game/${lobbyId}`)
+          }
         }
       } catch (err) {
-        console.error('Failed to parse WebSocket message:', err)
+        console.error('Error parsing message:', err)
       }
     }
-  }, [messages])
+  }, [messages, lobbyId, router])
 
   const startGame = () => {
     if (isConnected) {
@@ -42,7 +43,7 @@ export default function Lobby() {
   }
 
   return (
-    <main style={{ padding: '20px' }}>
+    <main>
       <h1>Lobby: {lobbyId}</h1>
       <h2>Players</h2>
       <ul>
@@ -55,11 +56,8 @@ export default function Lobby() {
           Start Game
         </button>
       )}
-      <p>
-        {lobbyState.phase === 'IN_GAME'
-          ? 'Game has started!'
-          : 'Waiting for players...'}
-      </p>
+      {lobbyState.phase === 'LOBBY' && <p>Waiting for game to start...</p>}
+      {lobbyState.phase !== 'LOBBY' && <p>Game in progress...</p>}
     </main>
   )
 }

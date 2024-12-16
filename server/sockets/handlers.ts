@@ -25,6 +25,7 @@ export const handleJoinGame = (
   // If lobby doesn't exist, create it
   if (!lobbies[lobbyId]) {
     lobbies[lobbyId] = {
+      lobbyId: lobbyId,
       phase: 'LOBBY',
       players: [],
       disconnectedPlayers: [],
@@ -235,8 +236,7 @@ export const handleStartGame = (
         })
       }
     })
-    advancePhase(lobby)
-    console.log(lobby)
+    advancePhase(lobby, wss, lobbyId)
   } catch (e) {
     ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
   }
@@ -261,7 +261,7 @@ export const handleSelectTeam = (
 }
 
 // Helper function to broadcast a message to all clients in a lobby
-const broadcastToLobby = (
+export const broadcastToLobby = (
   wss: MyWebSocketServer,
   lobbyId: string,
   data: object

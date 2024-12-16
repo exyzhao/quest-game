@@ -1,5 +1,6 @@
 import './global.css'
 import { WebSocketProvider } from '../context/WebSocketContext'
+import { PlayerProvider } from '@/context/PlayerContext'
 
 export const metadata = {
   title: 'Quest App',
@@ -14,9 +15,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <WebSocketProvider>
-          <main>{children}</main>
-        </WebSocketProvider>
+        <PlayerProvider>
+          <WebSocketProvider>
+            <main>{children}</main>
+          </WebSocketProvider>
+        </PlayerProvider>
       </body>
     </html>
   )
