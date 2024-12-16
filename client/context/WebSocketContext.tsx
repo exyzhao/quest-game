@@ -19,7 +19,7 @@ export const WebSocketProvider = ({
   const [messages, setMessages] = useState<string[]>([])
   const ws = useRef<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
-  const { setRole, setClericInfo, setKnownEvils } = usePlayerContext()
+  const { setId, setRole, setClericInfo, setKnownEvils } = usePlayerContext()
 
   useEffect(() => {
     ws.current = new WebSocket('ws://localhost:4000')
@@ -41,6 +41,8 @@ export const WebSocketProvider = ({
 
         switch (parsed.event) {
           case 'ROLE_ASSIGNED':
+            console.log(parsed)
+            setId(parsed.id)
             if (parsed.role) {
               setRole(parsed.role)
             }
@@ -72,7 +74,7 @@ export const WebSocketProvider = ({
         console.error('Failed to parse message:', err)
       }
     }
-  }, [messages, setRole, setKnownEvils, setClericInfo])
+  }, [messages, setId, setRole, setKnownEvils, setClericInfo])
 
   const sendMessage = (message: object) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {

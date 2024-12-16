@@ -21,7 +21,6 @@ export interface Lobby {
   phase: GamePhase
   players: Player[]
   disconnectedPlayers: Player[] // Track players who disconnected during the game
-  firstQuestLeader?: string
   clericInfo?: { leaderName: string; leaderAlignment: string }
   knownEvils?: string[]
   veterans: string[]
@@ -31,6 +30,8 @@ export interface Lobby {
   currentTeam: string[]
   magicTokenHolder?: string
 }
+
+export type sanitizedLobby = Omit<Lobby, 'clericInfo | knownEvils'>
 
 export interface QuestResult {
   round: number

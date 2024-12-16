@@ -56,6 +56,7 @@ export const handleJoinGame = (
       if (reconnectingPlayer.role) {
         sendPrivateMessage(wss, reconnectingPlayer.id, {
           event: 'ROLE_ASSIGNED',
+          id: reconnectingPlayer.id,
           role: reconnectingPlayer.role,
         })
       }
@@ -207,7 +208,6 @@ export const handleStartGame = (
 
     // Set first quest leader
     const questLeader = R.shuffle(lobby.players)[0]
-    lobby.firstQuestLeader = questLeader.id
     lobby.currentLeader = questLeader.id
     lobby.currentRound = 1
 
@@ -217,7 +217,6 @@ export const handleStartGame = (
         id: player.id,
         name: player.name,
       })), // No roles in public state
-      firstQuestLeader: questLeader.id,
     }
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,
@@ -267,6 +266,7 @@ export const handleStartGame = (
       if (player.role) {
         sendPrivateMessage(wss, player.id, {
           event: 'ROLE_ASSIGNED',
+          id: player.id,
           role: player.role,
         })
       }

@@ -12,7 +12,7 @@ export default function GamePage() {
   const [lobbyState, setLobbyState] = useState<Lobby | null>(null)
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
-  const { role, knownEvils, clericInfo } = usePlayerContext()
+  const { id, role, knownEvils, clericInfo } = usePlayerContext()
 
   useEffect(() => {
     if (messages.length > 0) {
