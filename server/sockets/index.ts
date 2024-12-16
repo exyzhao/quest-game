@@ -1,6 +1,10 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { JOIN_GAME, START_GAME } from './events'
-import { handleJoinGame, handleStartGame } from './handlers'
+import {
+  handleJoinGame,
+  handleStartGame,
+  handleDisconnection,
+} from './handlers'
 import { IncomingMessage } from 'http'
 
 // TODO: Find a place to put these reused types
@@ -17,8 +21,6 @@ export const initWebSockets = (server: import('http').Server) => {
   const wss = new WebSocketServer({ server }) as MyWebSocketServer
 
   wss.on('connection', (ws: MyWebSocket, req: IncomingMessage) => {
-    console.log('Client connected')
-
     ws.on('message', (msg: string) => {
       let data: any
       try {
@@ -42,7 +44,7 @@ export const initWebSockets = (server: import('http').Server) => {
     })
 
     ws.on('close', () => {
-      console.log('Client disconnected')
+      handleDisconnection(ws, wss)
     })
   })
 }

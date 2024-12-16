@@ -1,5 +1,10 @@
 import * as R from 'remeda'
 
+export const isPlayerEvil = (role: string): boolean => {
+  const evilRoles = ['Morgan le Fey', 'Blind Hunter', 'Minion of Mordred']
+  return evilRoles.includes(role)
+}
+
 export const getRolesForPlayerCount = (playerCount: number): string[] => {
   if (playerCount === 4) {
     const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']

@@ -1,29 +1,10 @@
 import { getRolesForPlayerCount } from '../game/roles'
 import { GAME_STATE_UPDATE } from './events'
-import { WebSocketServer, WebSocket } from 'ws'
+import { MyWebSocket, MyWebSocketServer, Player, Lobby } from '../game/types'
 
 import * as R from 'remeda'
-
-interface MyWebSocket extends WebSocket {
-  lobbyId?: string
-  playerId?: string
-}
-
-interface MyWebSocketServer extends WebSocketServer {
-  clients: Set<MyWebSocket>
-}
-
-interface Player {
-  id: string
-  name: string
-  role?: string
-}
-
-interface Lobby {
-  phase: 'LOBBY' | 'IN_GAME'
-  players: Player[]
-  firstQuestLeader?: string
-}
+import { advancePhase } from '../game/stateMachine'
+import { selectTeam } from '../game/quests'
 
 const lobbies: Record<string, Lobby> = {}
 
@@ -35,7 +16,9 @@ export const handleJoinGame = (
   const { lobbyId, playerName } = message
 
   if (!lobbyId || !playerName) {
-    ws.send(JSON.stringify({ error: 'Missing lobbyId or playerName' }))
+    ws.send(
+      JSON.stringify({ event: 'ERROR', error: 'Missing lobbyId or playerName' })
+    )
     return
   }
 
@@ -44,10 +27,54 @@ export const handleJoinGame = (
     lobbies[lobbyId] = {
       phase: 'LOBBY',
       players: [],
+      disconnectedPlayers: [],
+      veterans: [],
+      questHistory: [],
+      currentRound: 0,
+      currentTeam: [],
     }
   }
 
   const lobby = lobbies[lobbyId]
+
+  // Handle player reconnect
+  const reconnectingPlayerIndex = lobby.disconnectedPlayers.findIndex(
+    (player) => player.name === playerName
+  )
+  if (reconnectingPlayerIndex !== -1) {
+    // Remove the player from disconnectedPlayers only
+    lobby.disconnectedPlayers.splice(reconnectingPlayerIndex, 1)
+
+    // Associate WebSocket with the player's identity
+    const reconnectingPlayer = lobby.players.find((p) => p.name === playerName)
+    if (reconnectingPlayer) {
+      ws.lobbyId = lobbyId
+      ws.playerId = reconnectingPlayer.id
+
+      console.log(`Player ${playerName} reconnected to lobby ${lobbyId}.`)
+
+      broadcastToLobby(wss, lobbyId, {
+        event: 'GAME_STATE_UPDATE',
+        state: lobby,
+      })
+      return
+    }
+  }
+
+  if (lobby.phase !== 'LOBBY') {
+    ws.send(JSON.stringify({ event: 'ERROR', error: 'Game already started' }))
+    return
+  }
+
+  if (lobby.players.find((player) => player.name === playerName)) {
+    ws.send(
+      JSON.stringify({
+        event: 'ERROR',
+        error: 'A player with this name already exists in the lobby.',
+      })
+    )
+    return
+  }
 
   // Add player to lobby if they're not in it
   const playerId = `player-${Date.now()}`
@@ -60,7 +87,44 @@ export const handleJoinGame = (
   ws.playerId = playerId
 
   // Broadcast the updated lobby state to all players in the lobby
+  console.log(`Player ${playerName} connected to lobby ${lobbyId}.`)
   broadcastToLobby(wss, lobbyId, { event: GAME_STATE_UPDATE, state: lobby })
+}
+
+export const handleDisconnection = (
+  ws: MyWebSocket,
+  wss: MyWebSocketServer
+) => {
+  const { lobbyId, playerId } = ws
+  if (!lobbyId || !playerId) return
+
+  const lobby = lobbies[lobbyId]
+  if (!lobby) return
+
+  const player = lobby.players.find((p) => p.id === playerId)
+  if (!player) return
+
+  if (lobby.phase === 'LOBBY') {
+    // Remove the player entirely if still in the lobby phase
+    const playerIndex = lobby.players.findIndex((p) => p.id === playerId)
+    if (playerIndex !== -1) {
+      const [removedPlayer] = lobby.players.splice(playerIndex, 1)
+      console.log(`Player ${removedPlayer.name} removed from lobby ${lobbyId}.`)
+    }
+  } else {
+    // In game phase, just mark them as disconnected
+    if (!lobby.disconnectedPlayers.find((dp) => dp.id === playerId)) {
+      lobby.disconnectedPlayers.push(player)
+    }
+    console.log(
+      `Player ${player.name} disconnected during the game in lobby ${lobbyId}.`
+    )
+  }
+
+  broadcastToLobby(wss, lobbyId, {
+    event: GAME_STATE_UPDATE,
+    state: lobby,
+  })
 }
 
 export const handleStartGame = (
@@ -71,17 +135,17 @@ export const handleStartGame = (
   const { lobbyId } = message
 
   if (!lobbyId) {
-    ws.send(JSON.stringify({ error: 'Missing lobbyId' }))
+    ws.send(JSON.stringify({ event: 'ERROR', error: 'Missing lobbyId' }))
     return
   }
 
   const lobby = lobbies[lobbyId]
   if (!lobby) {
-    ws.send(JSON.stringify({ error: 'Lobby not found' }))
+    ws.send(JSON.stringify({ event: 'ERROR', error: 'Lobby not found' }))
   }
 
   if (lobby.phase !== 'LOBBY') {
-    ws.send(JSON.stringify({ error: 'Game already started' }))
+    ws.send(JSON.stringify({ event: 'ERROR', error: 'Game already started' }))
     return
   }
 
@@ -89,6 +153,7 @@ export const handleStartGame = (
   if (playerCount < 4 || playerCount > 10) {
     ws.send(
       JSON.stringify({
+        event: 'ERROR',
         error: 'Player count must be between 4 and 10 players.',
       })
     )
@@ -114,8 +179,8 @@ export const handleStartGame = (
     // Set first quest leader
     const questLeader = R.shuffle(lobby.players)[0]
     lobby.firstQuestLeader = questLeader.id
-
-    lobby.phase = 'IN_GAME'
+    lobby.currentLeader = questLeader.id
+    lobby.currentRound = 1
 
     const sanitizedLobby = {
       ...lobby,
@@ -170,8 +235,28 @@ export const handleStartGame = (
         })
       }
     })
+    advancePhase(lobby)
+    console.log(lobby)
   } catch (e) {
-    ws.send(JSON.stringify({ error: (e as Error).message }))
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const handleSelectTeam = (
+  ws: MyWebSocket,
+  message: {
+    lobbyId: string
+    selectedPlayers: string[]
+    magicTokenHolder: string
+  },
+  wss: MyWebSocketServer
+) => {
+  const { lobbyId, selectedPlayers, magicTokenHolder } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    selectTeam(lobby, selectedPlayers, magicTokenHolder)
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
   }
 }
 
@@ -201,10 +286,4 @@ const sendPrivateMessage = (
       client.send(payload)
     }
   })
-}
-
-module.exports = {
-  handleJoinGame,
-  handleStartGame,
-  lobbies,
 }
