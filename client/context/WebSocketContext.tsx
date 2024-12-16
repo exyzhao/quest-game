@@ -19,7 +19,7 @@ export const WebSocketProvider = ({
   const [messages, setMessages] = useState<string[]>([])
   const ws = useRef<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
-  const { setRole } = usePlayerContext()
+  const { setRole, setClericInfo, setKnownEvils } = usePlayerContext()
 
   useEffect(() => {
     ws.current = new WebSocket('ws://localhost:4000')
@@ -38,14 +38,41 @@ export const WebSocketProvider = ({
       const latestMessage = messages[messages.length - 1]
       try {
         const parsed = JSON.parse(latestMessage)
-        if (parsed.event === 'ROLE_ASSIGNED' && parsed.role) {
-          setRole(parsed.role) // Store the role in PlayerContext
+
+        switch (parsed.event) {
+          case 'ROLE_ASSIGNED':
+            if (parsed.role) {
+              setRole(parsed.role)
+            }
+            break
+
+          case 'EVIL_INFO':
+            if (parsed.message) {
+              const evilNames = parsed.message.split(': ')[1].split(', ')
+              setKnownEvils(evilNames)
+            }
+            break
+
+          case 'CLERIC_INFO':
+            if (parsed.message) {
+              const match = /The first quest leader \((.+?)\) is (.+)\./.exec(
+                parsed.message
+              )
+              if (match) {
+                const [_, leaderName, leaderAlignment] = match
+                setClericInfo({ leaderName, leaderAlignment })
+              }
+            }
+            break
+
+          default:
+            console.warn('Unknown event:', parsed.event)
         }
       } catch (err) {
         console.error('Failed to parse message:', err)
       }
     }
-  }, [messages, setRole])
+  }, [messages, setRole, setKnownEvils, setClericInfo])
 
   const sendMessage = (message: object) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {

@@ -10,7 +10,7 @@ export default function GamePage() {
   const [lobbyState, setLobbyState] = useState<any>(null)
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
-  const { role: playerRole } = usePlayerContext()
+  const { role, knownEvils, clericInfo } = usePlayerContext()
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -33,7 +33,7 @@ export default function GamePage() {
   return (
     <main>
       <h1>Game: {lobbyId}</h1>
-      <h2>Your Role: {playerRole}</h2>
+      <h2>Your Role: {role}</h2>
       <h2>Players</h2>
       <ul>
         {lobbyState.players.map((player: any) => {
@@ -42,7 +42,29 @@ export default function GamePage() {
           return <li key={player.id}>{player.name}</li>
         })}
       </ul>
-      {/* Add game-specific UI here */}
+      {/* Show known evils to evil players */}
+      {['Morgan le Fey', 'Minion of Mordred'].includes(role || '') &&
+        knownEvils && (
+          <div>
+            <h3>Known Evils:</h3>
+            <ul>
+              {knownEvils.map((evil) => (
+                <li key={evil}>{evil}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+      {/* Show cleric info to the Cleric */}
+      {role === 'Cleric' && clericInfo && (
+        <div>
+          <h3>Cleric Info:</h3>
+          <p>
+            The first quest leader, <strong>{clericInfo.leaderName}</strong>, is{' '}
+            <strong>{clericInfo.leaderAlignment}</strong>.
+          </p>
+        </div>
+      )}
     </main>
   )
 }
