@@ -8,6 +8,8 @@ import { selectTeam } from '../game/quests'
 
 const lobbies: Record<string, Lobby> = {}
 
+const knownEvilRoles = ['Morgan le Fey', 'Minion of Mordred']
+
 export const handleJoinGame = (
   ws: MyWebSocket,
   message: { lobbyId?: string; playerName?: string },
@@ -51,6 +53,33 @@ export const handleJoinGame = (
     if (reconnectingPlayer) {
       ws.lobbyId = lobbyId
       ws.playerId = reconnectingPlayer.id
+
+      if (reconnectingPlayer.role) {
+        sendPrivateMessage(wss, reconnectingPlayer.id, {
+          event: 'ROLE_ASSIGNED',
+          role: reconnectingPlayer.role,
+        })
+      }
+
+      if (reconnectingPlayer.role === 'Cleric' && lobby.clericInfo) {
+        // Resend Cleric info
+        sendPrivateMessage(wss, reconnectingPlayer.id, {
+          event: 'CLERIC_INFO',
+          message: `The first quest leader (${lobby.clericInfo.leaderName}) is ${lobby.clericInfo.leaderAlignment}.`,
+        })
+      }
+
+      if (
+        reconnectingPlayer.role &&
+        knownEvilRoles.includes(reconnectingPlayer.role) &&
+        lobby.knownEvils
+      ) {
+        // Resend known evils info
+        sendPrivateMessage(wss, reconnectingPlayer.id, {
+          event: 'EVIL_INFO',
+          message: `The known evils are: ${lobby.knownEvils.join(', ')}.`,
+        })
+      }
 
       console.log(`Player ${playerName} reconnected to lobby ${lobbyId}.`)
 
@@ -206,6 +235,12 @@ export const handleStartGame = (
         questLeader.role.includes('Troublemaker')
           ? 'Evil'
           : 'Good'
+
+      lobby.clericInfo = {
+        leaderName: questLeader.name,
+        leaderAlignment: leaderAlignment,
+      }
+
       sendPrivateMessage(wss, cleric.id, {
         event: 'CLERIC_INFO',
         message: `The first quest leader (${questLeader.name}) is ${leaderAlignment}.`,
@@ -213,16 +248,17 @@ export const handleStartGame = (
     }
 
     // Notify evils (except Blind Hunter) about each other
-    const knownEvilRoles = ['Morgan le Fey', 'Minion of Mordred']
     const evils = lobby.players.filter(
       (p) => p.role && knownEvilRoles.includes(p.role)
     )
     if (evils.length > 0) {
-      const evilNames = evils.map((e) => e.name).join(', ')
+      const evilNames = evils.map((e) => e.name)
+      lobby.knownEvils = evilNames // Store known evils
+
       evils.forEach((evil) => {
         sendPrivateMessage(wss, evil.id, {
           event: 'EVIL_INFO',
-          message: `The known evils are: ${evilNames}.`,
+          message: `The known evils are: ${evilNames.join(', ')}.`,
         })
       })
     }
