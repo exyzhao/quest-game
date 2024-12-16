@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws'
-import { GamePhase } from './stateMachine'
+import { GamePhase } from './server/game/stateMachine'
 
 export interface MyWebSocket extends WebSocket {
   lobbyId?: string

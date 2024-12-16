@@ -5,9 +5,11 @@ import { useWebSocketContext } from '../../../context/WebSocketContext'
 import { usePathname } from 'next/navigation'
 import { usePlayerContext } from '../../../context/PlayerContext'
 
+import { Lobby, Player } from '../../../../types'
+
 export default function GamePage() {
   const { messages } = useWebSocketContext()
-  const [lobbyState, setLobbyState] = useState<any>(null)
+  const [lobbyState, setLobbyState] = useState<Lobby | null>(null)
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
   const { role, knownEvils, clericInfo } = usePlayerContext()
@@ -30,15 +32,21 @@ export default function GamePage() {
     return <p>Loading game state...</p>
   }
 
+  const currentLeader = lobbyState.players.find(
+    (player: Player) => player.id === lobbyState.currentLeader
+  )
+
+  // For debugging
+  console.log(lobbyState)
+
   return (
     <main>
       <h1>Game: {lobbyId}</h1>
       <h2>Your Role: {role}</h2>
+      {currentLeader && <h2>Current Quest Leader: {currentLeader.name}</h2>}
       <h2>Players</h2>
       <ul>
         {lobbyState.players.map((player: any) => {
-          // You might not want to show everyone's role publicly,
-          // so just show their names here.
           return <li key={player.id}>{player.name}</li>
         })}
       </ul>

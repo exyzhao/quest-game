@@ -1,5 +1,5 @@
 import { broadcastToLobby } from '../sockets/handlers'
-import { MyWebSocketServer, Lobby } from './types'
+import { MyWebSocketServer, Lobby } from '../../types'
 
 export type GamePhase =
   | 'LOBBY'

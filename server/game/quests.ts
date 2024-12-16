@@ -1,4 +1,4 @@
-import { Lobby, QuestResult } from './types'
+import { Lobby, QuestResult } from '../../types'
 import { getQuestRules } from './ruleset'
 import { isPlayerEvil } from './roles'
 import { advancePhase } from './stateMachine'
