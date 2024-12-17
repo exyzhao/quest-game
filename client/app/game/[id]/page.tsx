@@ -18,6 +18,8 @@ export default function GamePage() {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
   const [tokenHolder, setTokenHolder] = useState<string | null>(null)
   const [passQuest, setPassQuest] = useState<boolean | null>(null)
+  const [isQuestCardSubmitted, setIsQuestCardSubmited] =
+    useState<boolean>(false)
 
   // Redirect if directly navigating
   useEffect(() => {
@@ -156,7 +158,19 @@ export default function GamePage() {
           Fail
         </button>
         <div>
-          <button disabled={passQuest === null}>Confirm</button>
+          <button
+            onClick={() => {
+              sendMessage({
+                event: 'SUBMIT_QUEST',
+                lobbyId,
+                isQuestCardPass: passQuest,
+              })
+              setIsQuestCardSubmited(true)
+            }}
+            disabled={passQuest === null || isQuestCardSubmitted}
+          >
+            {isQuestCardSubmitted ? 'Submission confirmed' : 'Confirm'}
+          </button>
         </div>
       </div>
     )
