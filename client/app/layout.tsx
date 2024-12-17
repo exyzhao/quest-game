@@ -1,6 +1,7 @@
 import './global.css'
 import { WebSocketProvider } from '../context/WebSocketContext'
 import { PlayerProvider } from '@/context/PlayerContext'
+import GlobalErrorPopup from './components/GlobalErrorPopup'
 
 export const metadata = {
   title: 'Quest App',
@@ -17,7 +18,8 @@ export default function RootLayout({
       <body>
         <PlayerProvider>
           <WebSocketProvider>
-            <main>{children}</main>
+            {children}
+            <GlobalErrorPopup />
           </WebSocketProvider>
         </PlayerProvider>
       </body>

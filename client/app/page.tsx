@@ -5,7 +5,8 @@ import { useWebSocketContext } from '../context/WebSocketContext'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  const { isConnected, sendMessage, lobbyState } = useWebSocketContext()
+  const { isConnected, sendMessage, lobbyState, errorMessage } =
+    useWebSocketContext()
   const [playerName, setPlayerName] = useState('')
   const [lobbyCode, setLobbyCode] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +44,13 @@ export default function Home() {
       setWaiting(false)
     }
   }, [waiting, lobbyState, lobbyCode, router])
+
+  // Stop waiting and show error if an errorMessage appears
+  useEffect(() => {
+    if (errorMessage) {
+      setWaiting(false)
+    }
+  }, [errorMessage])
 
   return (
     <main style={{ padding: '20px' }}>

@@ -20,13 +20,17 @@ export const WebSocketProvider = ({
   const ws = useRef<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [lobbyState, setLobbyState] = useState<Lobby | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { setId, setRole, setClericInfo, setKnownEvils } = usePlayerContext()
 
   useEffect(() => {
     ws.current = new WebSocket('ws://localhost:4000')
     ws.current.onopen = () => setIsConnected(true)
     ws.current.onclose = () => setIsConnected(false)
-    ws.current.onerror = (err) => console.error('WebSocket error:', err)
+    ws.current.onerror = (err) => {
+      console.error('WebSocket error:', err)
+      setErrorMessage('A connection error occurred. Please try again.')
+    }
 
     ws.current.onmessage = (event) => {
       try {
@@ -63,11 +67,16 @@ export const WebSocketProvider = ({
             }
             break
 
+          case 'ERROR':
+            setErrorMessage(parsed.error || 'An unknown error has occurred.')
+            break
+
           default:
             console.warn('Unknown event:', parsed.event)
         }
       } catch (err) {
         console.error('Failed to parse message:', err)
+        setErrorMessage('Invalid message format received.')
       }
     }
 
@@ -81,11 +90,16 @@ export const WebSocketProvider = ({
       ws.current.send(JSON.stringify(message))
     } else {
       console.error('WebSocket is not open.')
+      setErrorMessage('Cannot send message: WebSocket not connected.')
     }
   }
 
+  const clearError = () => setErrorMessage(null)
+
   return (
-    <WebSocketContext.Provider value={{ isConnected, sendMessage, lobbyState }}>
+    <WebSocketContext.Provider
+      value={{ isConnected, sendMessage, lobbyState, errorMessage, clearError }}
+    >
       {children}
     </WebSocketContext.Provider>
   )
