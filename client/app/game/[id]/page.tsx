@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useWebSocketContext } from '../../../context/WebSocketContext'
+import { useWebSocketContext } from '@/context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
-import { usePlayerContext } from '../../../context/PlayerContext'
+import { usePlayerContext } from '@/context/PlayerContext'
 
 import { Lobby, Player } from '../../../../shared/types'
 import { QuestRules } from '../../../../server/game/ruleset'
@@ -113,43 +113,53 @@ export default function GamePage() {
 
   // Component for playing questing cards
   const QuestResolution = () => {
-    if (lobbyState.phase === 'QUEST_RESOLUTION') {
-      if (lobbyState.currentTeam.includes(id)) {
-        return (
-          <div>
-            <p>Play your quest card</p>
-            <button
-              onClick={() => setPassQuest(true)}
-              style={{
-                backgroundColor: passQuest === true ? 'lightblue' : '',
-              }}
-            >
-              Pass
-            </button>
-            <button
-              onClick={() => setPassQuest(false)}
-              style={{
-                backgroundColor: passQuest === false ? 'lightblue' : '',
-              }}
-              disabled={
-                ![
-                  'Morgan le Fey',
-                  'Minion of Mordred',
-                  'Blind Hunter',
-                ].includes(player.role ?? '')
-              }
-            >
-              Fail
-            </button>
-            <div>
-              <button disabled={passQuest === null}>Confirm</button>
-            </div>
-          </div>
-        )
-      } else {
-        return <p>Waiting for questing team to return...</p>
-      }
+    if (lobbyState.phase !== 'QUEST_RESOLUTION') return null
+
+    if (!lobbyState.currentTeam.includes(id)) {
+      return <p>Waiting for questing team to return...</p>
     }
+
+    const isYouthTokened =
+      player.role === 'Youth' && lobbyState.magicTokenHolder === id
+
+    const isGoodPlayer = ![
+      'Morgan le Fey',
+      'Minion of Mordred',
+      'Blind Hunter',
+    ].includes(player.role ?? '')
+
+    const isEvilTokened =
+      ['Minion of Mordred', 'Blind Hunter'].includes(player.role ?? '') &&
+      lobbyState.magicTokenHolder === id
+
+    const canFail = (!isGoodPlayer && !isEvilTokened) || isYouthTokened
+
+    return (
+      <div>
+        <p>Play your quest card</p>
+        <button
+          onClick={() => setPassQuest(true)}
+          style={{
+            backgroundColor: passQuest === true ? 'lightblue' : '',
+          }}
+          disabled={isYouthTokened}
+        >
+          Pass
+        </button>
+        <button
+          onClick={() => setPassQuest(false)}
+          style={{
+            backgroundColor: passQuest === false ? 'lightblue' : '',
+          }}
+          disabled={!canFail}
+        >
+          Fail
+        </button>
+        <div>
+          <button disabled={passQuest === null}>Confirm</button>
+        </div>
+      </div>
+    )
   }
 
   // For debugging

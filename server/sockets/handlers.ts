@@ -5,7 +5,8 @@ import * as R from 'remeda'
 import { advancePhase } from '../game/stateMachine'
 import { updateTeam, confirmTeam } from '../game/quests'
 import { getQuestRules } from '../game/ruleset'
-import { knownEvilRoles } from '../../shared/constants'
+// import { knownEvilRoles } from '../../shared/constants' TODO
+export const knownEvilRoles = ['Morgan le Fey', 'Minion of Mordred']
 
 const lobbies: Record<string, Lobby> = {}
 
