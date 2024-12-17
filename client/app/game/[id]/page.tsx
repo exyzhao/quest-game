@@ -130,13 +130,17 @@ export default function GamePage() {
         <div key={player.id}>
           {/* Player Selection Button */}
           <button
-            onClick={() => isLeader && togglePlayerSelection(player.id)} // Only the leader can interact
+            onClick={() =>
+              isLeader &&
+              lobbyState.phase === 'TEAM_SELECTION' &&
+              togglePlayerSelection(player.id)
+            } // Only the leader can interact
             style={{
               backgroundColor: lobbyState.currentTeam.includes(player.id)
                 ? 'lightblue' // Highlight players currently on the team
                 : '',
             }}
-            disabled={!isLeader} // Disable for non-leaders
+            disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'} // Disable for non-leaders
           >
             {player.name} {player.id === id ? '(You)' : ''}
           </button>
@@ -144,13 +148,17 @@ export default function GamePage() {
           {/* Token Assignment Button */}
           {lobbyState.currentTeam.includes(player.id) && (
             <button
-              onClick={() => isLeader && assignToken(player.id)} // Only leader can interact
+              onClick={() =>
+                isLeader &&
+                lobbyState.phase === 'TEAM_SELECTION' &&
+                assignToken(player.id)
+              } // Only leader can interact
               style={{
                 marginLeft: '10px',
                 backgroundColor:
                   lobbyState.magicTokenHolder === player.id ? 'gold' : 'white',
               }}
-              disabled={!isLeader} // Disable for non-leaders
+              disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'} // Disable for non-leaders
             >
               {lobbyState.magicTokenHolder === player.id
                 ? 'Token Assigned'
@@ -159,7 +167,9 @@ export default function GamePage() {
           )}
         </div>
       ))}
-      {isLeader ? <button onClick={confirmTeam}>Confirm Team</button> : null}
+      {isLeader && lobbyState.phase === 'TEAM_SELECTION' ? (
+        <button onClick={confirmTeam}>Confirm Team</button>
+      ) : null}
       <h2>Players</h2>
       <ul>
         {lobbyState.players.map((player: Player) => {
