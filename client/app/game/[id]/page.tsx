@@ -5,8 +5,9 @@ import { useWebSocketContext } from '../../../context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
 import { usePlayerContext } from '../../../context/PlayerContext'
 
-import { Lobby, Player } from '../../../../types'
+import { Lobby, Player } from '../../../../shared/types'
 import { QuestRules } from '../../../../server/game/ruleset'
+// import { evilRoles } from '@/shared/constants' TODO
 
 export default function GamePage() {
   const { sendMessage, lobbyState } = useWebSocketContext()
@@ -16,6 +17,7 @@ export default function GamePage() {
   const router = useRouter()
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
   const [tokenHolder, setTokenHolder] = useState<string | null>(null)
+  const [passQuest, setPassQuest] = useState<boolean | null>(null)
 
   // Redirect if directly navigating
   useEffect(() => {
@@ -28,14 +30,19 @@ export default function GamePage() {
     return <p>Loading game...</p>
   }
 
+  if (!id) {
+    return <p>TODO ERROR</p>
+  }
+
+  const player = lobbyState.players.find((p: Player) => p.id === id)
   const currentLeader = lobbyState.players.find(
     (player: Player) => player.id === lobbyState.currentLeader
   )
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound
   )
-  if (!currentLeader || !currentRule || !id) {
-    return <p>ERRORRRR</p>
+  if (!player || !currentLeader || !currentRule) {
+    return <p>TODO ERROR</p>
   }
   const isLeader = id === currentLeader?.id
 
@@ -102,6 +109,47 @@ export default function GamePage() {
       event: 'CONFIRM_TEAM',
       lobbyId,
     })
+  }
+
+  // Component for playing questing cards
+  const QuestResolution = () => {
+    if (lobbyState.phase === 'QUEST_RESOLUTION') {
+      if (lobbyState.currentTeam.includes(id)) {
+        return (
+          <div>
+            <p>Play your quest card</p>
+            <button
+              onClick={() => setPassQuest(true)}
+              style={{
+                backgroundColor: passQuest === true ? 'lightblue' : '',
+              }}
+            >
+              Pass
+            </button>
+            <button
+              onClick={() => setPassQuest(false)}
+              style={{
+                backgroundColor: passQuest === false ? 'lightblue' : '',
+              }}
+              disabled={
+                ![
+                  'Morgan le Fey',
+                  'Minion of Mordred',
+                  'Blind Hunter',
+                ].includes(player.role ?? '')
+              }
+            >
+              Fail
+            </button>
+            <div>
+              <button disabled={passQuest === null}>Confirm</button>
+            </div>
+          </div>
+        )
+      } else {
+        return <p>Waiting for questing team to return...</p>
+      }
+    }
   }
 
   // For debugging
@@ -173,16 +221,7 @@ export default function GamePage() {
         <button onClick={confirmTeam}>Confirm Team</button>
       ) : null}
 
-      {lobbyState.phase === 'QUEST_RESOLUTION' &&
-      lobbyState.currentTeam.includes(id) ? (
-        <>
-          <p>Select result of the quest.</p>
-        </>
-      ) : (
-        <>
-          <p>Waiting for questing team to return...</p>
-        </>
-      )}
+      <QuestResolution />
 
       {/* Show known evils to evil players */}
       {['Morgan le Fey', 'Minion of Mordred'].includes(role || '') &&

@@ -1,4 +1,4 @@
-import { Lobby, MyWebSocketServer, QuestResult } from '../../types'
+import { Lobby, MyWebSocketServer, QuestResult } from '../../shared/types'
 import { getQuestRules } from './ruleset'
 import { isPlayerEvil } from './roles'
 import { advancePhase } from './stateMachine'

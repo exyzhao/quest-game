@@ -8,7 +8,7 @@ import React, {
   useState,
 } from 'react'
 import { usePlayerContext } from './PlayerContext'
-import { Lobby } from '../../types'
+import { Lobby } from '../../shared/types'
 
 interface WebSocketContextValue {
   isConnected: boolean
