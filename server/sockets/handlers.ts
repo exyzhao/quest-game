@@ -3,7 +3,7 @@ import { GAME_STATE_UPDATE } from './events'
 import { MyWebSocket, MyWebSocketServer, Lobby } from '../../types'
 import * as R from 'remeda'
 import { advancePhase } from '../game/stateMachine'
-import { updateTeam } from '../game/quests'
+import { updateTeam, confirmTeam } from '../game/quests'
 import { getQuestRules } from '../game/ruleset'
 
 const lobbies: Record<string, Lobby> = {}
@@ -276,7 +276,11 @@ export const handleStartGame = (
         })
       })
     }
-    advancePhase(lobby, wss, lobbyId)
+    advancePhase(lobby)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
   } catch (e) {
     ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
   }
@@ -295,6 +299,24 @@ export const handleUpdateTeam = (
   const lobby = lobbies[lobbyId]
   try {
     updateTeam(lobby, selectedPlayers, magicTokenHolder)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const handleConfirmTeam = (
+  ws: MyWebSocket,
+  message: { lobbyId: string },
+  wss: MyWebSocketServer
+) => {
+  const { lobbyId } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    confirmTeam(lobby)
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,
       state: lobby,

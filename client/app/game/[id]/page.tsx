@@ -87,6 +87,23 @@ export default function GamePage() {
     })
   }
 
+  // Confirm the team and token assignment
+  const confirmTeam = () => {
+    if (selectedPlayers.length !== currentRule.requiredPlayers) {
+      alert(`Please select exactly ${currentRule.requiredPlayers} players.`)
+      return
+    }
+    if (!tokenHolder) {
+      alert('Please assign the magic token to one of the selected players.')
+      return
+    }
+
+    sendMessage({
+      event: 'CONFIRM_TEAM',
+      lobbyId,
+    })
+  }
+
   // For debugging
   console.log(lobbyState)
 
@@ -105,44 +122,44 @@ export default function GamePage() {
         )
       })}
       {isLeader ? (
-        <>
-          <p>Select {currentRule.requiredPlayers} players for the quest.</p>
-
-          {lobbyState.players.map((player) => (
-            <div key={player.id}>
-              <button
-                onClick={() => togglePlayerSelection(player.id)}
-                style={{
-                  backgroundColor: selectedPlayers.includes(player.id)
-                    ? 'lightblue'
-                    : '',
-                }}
-                disabled={!isLeader}
-              >
-                {player.name} {player.id === id ? '(You)' : ''}
-              </button>
-              {selectedPlayers.includes(player.id) && (
-                <button
-                  onClick={() => assignToken(player.id)}
-                  style={{
-                    marginLeft: '10px',
-                    backgroundColor:
-                      tokenHolder === player.id ? 'gold' : 'white',
-                  }}
-                >
-                  {tokenHolder === player.id
-                    ? 'Token Assigned'
-                    : 'Assign Token'}
-                </button>
-              )}
-            </div>
-          ))}
-
-          <button>Confirm Team</button>
-        </>
+        <p>Select {currentRule.requiredPlayers} players for the quest.</p>
       ) : (
         <p>Waiting for {currentLeader.name} to select the team...</p>
       )}
+      {lobbyState.players.map((player) => (
+        <div key={player.id}>
+          {/* Player Selection Button */}
+          <button
+            onClick={() => isLeader && togglePlayerSelection(player.id)} // Only the leader can interact
+            style={{
+              backgroundColor: lobbyState.currentTeam.includes(player.id)
+                ? 'lightblue' // Highlight players currently on the team
+                : '',
+            }}
+            disabled={!isLeader} // Disable for non-leaders
+          >
+            {player.name} {player.id === id ? '(You)' : ''}
+          </button>
+
+          {/* Token Assignment Button */}
+          {lobbyState.currentTeam.includes(player.id) && (
+            <button
+              onClick={() => isLeader && assignToken(player.id)} // Only leader can interact
+              style={{
+                marginLeft: '10px',
+                backgroundColor:
+                  lobbyState.magicTokenHolder === player.id ? 'gold' : 'white',
+              }}
+              disabled={!isLeader} // Disable for non-leaders
+            >
+              {lobbyState.magicTokenHolder === player.id
+                ? 'Token Assigned'
+                : 'Assign Token'}
+            </button>
+          )}
+        </div>
+      ))}
+      {isLeader ? <button onClick={confirmTeam}>Confirm Team</button> : null}
       <h2>Players</h2>
       <ul>
         {lobbyState.players.map((player: Player) => {

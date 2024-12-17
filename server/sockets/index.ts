@@ -1,10 +1,11 @@
 import { WebSocketServer, WebSocket } from 'ws'
-import { JOIN_GAME, START_GAME, UPDATE_TEAM } from './events'
+import { JOIN_GAME, START_GAME, UPDATE_TEAM, CONFIRM_TEAM } from './events'
 import {
   handleJoinGame,
   handleStartGame,
   handleDisconnection,
   handleUpdateTeam,
+  handleConfirmTeam,
 } from './handlers'
 import { IncomingMessage } from 'http'
 
@@ -40,6 +41,9 @@ export const initWebSockets = (server: import('http').Server) => {
           break
         case UPDATE_TEAM:
           handleUpdateTeam(ws, data, wss)
+          break
+        case CONFIRM_TEAM:
+          handleConfirmTeam(ws, data, wss)
           break
         default:
           ws.send(JSON.stringify({ error: 'Unknown event' }))

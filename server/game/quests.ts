@@ -1,4 +1,4 @@
-import { Lobby, QuestResult } from '../../types'
+import { Lobby, MyWebSocketServer, QuestResult } from '../../types'
 import { getQuestRules } from './ruleset'
 import { isPlayerEvil } from './roles'
 import { advancePhase } from './stateMachine'
@@ -14,6 +14,7 @@ export const updateTeam = (
   selectedPlayerIds: string[],
   magicTokenHolder: string | null
 ) => {
+  // TODO: pull rules from lobby
   const rules = getQuestRules(lobby.players.length)
   const currentQuest = rules.find((r) => r.round === lobby.currentRound)
   if (!currentQuest) throw new Error('Invalid quest round.')
@@ -29,34 +30,26 @@ export const updateTeam = (
 }
 
 /**
- * Selects a team for the quest.
+ * Confirm a team for the quest.
  * @param lobby The game lobby state
  * @param selectedPlayerIds The IDs of the players selected for the quest
  * @param magicTokenHolder The ID of the player to whom the magic token is assigned
  */
-export const confirmTeam = (
-  lobby: Lobby,
-  selectedPlayerIds: string[],
-  magicTokenHolder: string
-) => {
+export const confirmTeam = (lobby: Lobby) => {
   const rules = getQuestRules(lobby.players.length)
   const currentQuest = rules.find((r) => r.round === lobby.currentRound)
   if (!currentQuest) throw new Error('Invalid quest round.')
 
-  if (selectedPlayerIds.length !== currentQuest.requiredPlayers) {
+  if (lobby.currentTeam.length !== currentQuest.requiredPlayers) {
     throw new Error(
       `Invalid team size. Required: ${currentQuest.requiredPlayers}`
     )
   }
-
-  if (!selectedPlayerIds.includes(magicTokenHolder)) {
+  if (!lobby.magicTokenHolder) {
     throw new Error('Must magic token someone on the team.')
   }
 
-  lobby.currentTeam = selectedPlayerIds
-  lobby.magicTokenHolder = magicTokenHolder
-
-  // advancePhase(lobby)
+  advancePhase(lobby)
 }
 
 /**

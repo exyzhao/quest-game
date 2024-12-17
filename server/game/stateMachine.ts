@@ -10,11 +10,11 @@ export type GamePhase =
   | 'ENDGAME_DISCUSSION'
   | 'GAME_OVER'
 
-export const advancePhase = (
-  lobby: Lobby,
-  wss: MyWebSocketServer,
-  lobbyId: string
-) => {
+/**
+ * Advances the state of the game. Remember to broadcast lobby state after calling.
+ * @param lobby The game lobby state
+ */
+export const advancePhase = (lobby: Lobby) => {
   switch (lobby.phase) {
     case 'LOBBY':
       lobby.phase = 'TEAM_SELECTION'
@@ -44,11 +44,6 @@ export const advancePhase = (
   }
 
   console.log(lobby)
-
-  broadcastToLobby(wss, lobbyId, {
-    event: 'GAME_STATE_UPDATE',
-    state: lobby,
-  })
 }
 
 const isGameOver = (lobby: Lobby) => false
