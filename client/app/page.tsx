@@ -5,7 +5,7 @@ import { useWebSocketContext } from '../context/WebSocketContext'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  const { isConnected, messages, sendMessage } = useWebSocketContext()
+  const { isConnected, sendMessage, lobbyState } = useWebSocketContext()
   const [playerName, setPlayerName] = useState('')
   const [lobbyCode, setLobbyCode] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -13,7 +13,6 @@ export default function Home() {
   const router = useRouter()
 
   const joinGame = () => {
-    // Validate inputs
     if (!playerName.trim() || !lobbyCode.trim()) {
       setError('Both lobby code and player name are required.')
       return
@@ -21,7 +20,6 @@ export default function Home() {
     setError(null)
 
     if (isConnected) {
-      // Send JOIN_GAME request
       sendMessage({
         event: 'JOIN_GAME',
         lobbyId: lobbyCode,
@@ -33,33 +31,22 @@ export default function Home() {
     }
   }
 
-  // Listen for WebSocket messages
   useEffect(() => {
-    if (waiting && messages.length > 0) {
-      const latestMessage = messages[messages.length - 1]
-      try {
-        const parsedMessage = JSON.parse(latestMessage)
+    // Once lobbyState is available and we've been waiting, check if there's an error or if we can proceed
+    if (waiting && lobbyState) {
+      // Check if lobbyState indicates a successful join
+      // Normally, if we reach this point, GAME_STATE_UPDATE means the lobby was successfully joined
+      // If the server sends errors via separate events, handle them similarly.
+      // Otherwise, if lobbyState is defined, navigate to /lobby/[lobbyCode]
 
-        if (parsedMessage.event === 'ERROR') {
-          setError(parsedMessage.error) // Display the error
-          setWaiting(false) // Stop waiting
-        }
-
-        if (
-          parsedMessage.event === 'GAME_STATE_UPDATE' &&
-          parsedMessage.state
-        ) {
-          router.push(`/lobby/${lobbyCode}`) // Navigate to lobby on success
-        }
-      } catch (err) {
-        console.error('Failed to parse message:', err)
-      }
+      router.push(`/lobby/${lobbyCode}`)
+      setWaiting(false)
     }
-  }, [messages, waiting, lobbyCode, router])
+  }, [waiting, lobbyState, lobbyCode, router])
 
   return (
     <main style={{ padding: '20px' }}>
-      <h1>Welcome to Avalon</h1>
+      <h1>Welcome to Quest</h1>
       <p>Enter your name and lobby code to join a game.</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <div>

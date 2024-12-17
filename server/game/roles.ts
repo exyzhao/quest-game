@@ -19,6 +19,8 @@ export const getRolesForPlayerCount = (playerCount: number): string[] => {
       'Minion of Mordred',
       ...selectedGoodRoles,
     ]
+  } else if (playerCount === 2) {
+    return ['Morgan le Fey', 'Cleric']
   } else if (playerCount === 6) {
     return [
       'Morgan le Fey',

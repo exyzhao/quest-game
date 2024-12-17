@@ -9,25 +9,10 @@ import { Lobby, Player } from '../../../../types'
 import { QuestRules } from '../../../../server/game/ruleset'
 
 export default function GamePage() {
-  const { messages } = useWebSocketContext()
-  const [lobbyState, setLobbyState] = useState<Lobby | null>(null)
+  const { lobbyState } = useWebSocketContext()
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
   const { id, role, knownEvils, clericInfo } = usePlayerContext()
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      const latestMessage = messages[messages.length - 1]
-      try {
-        const parsed = JSON.parse(latestMessage)
-        if (parsed.event === 'GAME_STATE_UPDATE' && parsed.state) {
-          setLobbyState(parsed.state)
-        }
-      } catch (err) {
-        console.error('Error parsing message:', err)
-      }
-    }
-  }, [messages])
 
   if (!lobbyState) {
     return <p>Loading game state...</p>
@@ -38,7 +23,7 @@ export default function GamePage() {
   )
 
   const currentRule = lobbyState.rules?.find(
-    (rule) => rule.round === lobbyState.currentRound
+    (rule: QuestRules) => rule.round === lobbyState.currentRound
   )
 
   // For debugging

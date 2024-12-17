@@ -75,6 +75,12 @@ export const handleJoinGame = (
         knownEvilRoles.includes(reconnectingPlayer.role) &&
         lobby.knownEvils
       ) {
+        console.log(
+          'SENDING EVIL TO RECONNECT ' +
+            reconnectingPlayer.id +
+            ' ' +
+            reconnectingPlayer.name
+        )
         // Resend known evils info
         sendPrivateMessage(wss, reconnectingPlayer.id, {
           event: 'EVIL_INFO',
@@ -181,7 +187,8 @@ export const handleStartGame = (
   }
 
   const playerCount = lobby.players.length
-  if (playerCount < 4 || playerCount > 10) {
+  // TODO: adjust back
+  if (playerCount < 2 || playerCount > 10) {
     ws.send(
       JSON.stringify({
         event: 'ERROR',
@@ -226,6 +233,17 @@ export const handleStartGame = (
       state: sanitizedLobby,
     })
 
+    // Send each player their role privately
+    lobby.players.forEach((player) => {
+      if (player.role) {
+        sendPrivateMessage(wss, player.id, {
+          event: 'ROLE_ASSIGNED',
+          id: player.id,
+          role: player.role,
+        })
+      }
+    })
+
     // Notify cleric about first leader allegiance
     const cleric = lobby.players.find((player) => player.role === 'Cleric')
     if (cleric && questLeader.role) {
@@ -257,23 +275,14 @@ export const handleStartGame = (
       lobby.knownEvils = evilNames // Store known evils
 
       evils.forEach((evil) => {
+        console.log('SENDING EVIL TO ' + evil.id + ' ' + evil.name)
+        // Send known evils info
         sendPrivateMessage(wss, evil.id, {
           event: 'EVIL_INFO',
           message: `The known evils are: ${evilNames.join(', ')}.`,
         })
       })
     }
-
-    // Send each player their role privately
-    lobby.players.forEach((player) => {
-      if (player.role) {
-        sendPrivateMessage(wss, player.id, {
-          event: 'ROLE_ASSIGNED',
-          id: player.id,
-          role: player.role,
-        })
-      }
-    })
     advancePhase(lobby, wss, lobbyId)
   } catch (e) {
     ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))

@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react'
 import { usePlayerContext } from './PlayerContext'
+import { Lobby } from '../../types'
 
 const WebSocketContext = createContext<any>(null)
 
@@ -16,32 +17,27 @@ export const WebSocketProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const [messages, setMessages] = useState<string[]>([])
   const ws = useRef<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const [lobbyState, setLobbyState] = useState<Lobby | null>(null)
   const { setId, setRole, setClericInfo, setKnownEvils } = usePlayerContext()
 
   useEffect(() => {
     ws.current = new WebSocket('ws://localhost:4000')
     ws.current.onopen = () => setIsConnected(true)
-    ws.current.onmessage = (event) =>
-      setMessages((prev) => [...prev, event.data])
     ws.current.onclose = () => setIsConnected(false)
     ws.current.onerror = (err) => console.error('WebSocket error:', err)
 
-    return () => ws.current?.close()
-  }, [])
-
-  // Listen for ROLE_ASSIGNED
-  useEffect(() => {
-    if (messages.length > 0) {
-      const latestMessage = messages[messages.length - 1]
+    ws.current.onmessage = (event) => {
       try {
-        const parsed = JSON.parse(latestMessage)
+        const parsed = JSON.parse(event.data)
+        console.log('Received:', parsed)
 
         switch (parsed.event) {
+          case 'GAME_STATE_UPDATE':
+            setLobbyState(parsed.state)
+
           case 'ROLE_ASSIGNED':
-            console.log(parsed)
             setId(parsed.id)
             if (parsed.role) {
               setRole(parsed.role)
@@ -74,7 +70,11 @@ export const WebSocketProvider = ({
         console.error('Failed to parse message:', err)
       }
     }
-  }, [messages, setId, setRole, setKnownEvils, setClericInfo])
+
+    return () => {
+      ws.current?.close()
+    }
+  }, [setId, setRole, setKnownEvils, setClericInfo])
 
   const sendMessage = (message: object) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
@@ -85,7 +85,7 @@ export const WebSocketProvider = ({
   }
 
   return (
-    <WebSocketContext.Provider value={{ isConnected, messages, sendMessage }}>
+    <WebSocketContext.Provider value={{ isConnected, sendMessage, lobbyState }}>
       {children}
     </WebSocketContext.Provider>
   )

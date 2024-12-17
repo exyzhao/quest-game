@@ -5,29 +5,16 @@ import { useWebSocketContext } from '../../../context/WebSocketContext'
 import { useRouter, usePathname } from 'next/navigation'
 
 export default function Lobby() {
-  const { isConnected, messages, sendMessage } = useWebSocketContext()
-  const [lobbyState, setLobbyState] = useState<any>(null)
+  const { isConnected, sendMessage, lobbyState } = useWebSocketContext()
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
   const router = useRouter()
 
   useEffect(() => {
-    if (messages.length > 0) {
-      const latestMessage = messages[messages.length - 1]
-      try {
-        const parsed = JSON.parse(latestMessage)
-        if (parsed.event === 'GAME_STATE_UPDATE' && parsed.state) {
-          setLobbyState(parsed.state)
-
-          if (parsed.state.phase !== 'LOBBY') {
-            router.push(`/game/${lobbyId}`)
-          }
-        }
-      } catch (err) {
-        console.error('Error parsing message:', err)
-      }
+    if (lobbyState && lobbyState.phase !== 'LOBBY') {
+      router.push(`/game/${lobbyId}`)
     }
-  }, [messages, lobbyId, router])
+  }, [lobbyState, lobbyId, router])
 
   const startGame = () => {
     if (isConnected) {
