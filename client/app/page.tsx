@@ -8,7 +8,7 @@ export default function Home() {
   const { isConnected, sendMessage, lobbyState, errorMessage } =
     useWebSocketContext()
   const [playerName, setPlayerName] = useState('')
-  const [lobbyCode, setLobbyCode] = useState('')
+  const [lobbyCode, setLobbyCode] = useState('1234')
   const [error, setError] = useState<string | null>(null)
   const [waiting, setWaiting] = useState(false)
   const router = useRouter()

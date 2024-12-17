@@ -30,7 +30,7 @@ export interface Lobby {
   currentLeader?: string
   currentRound: number
   currentTeam: string[]
-  magicTokenHolder?: string
+  magicTokenHolder: string | null
 }
 
 export type sanitizedLobby = Omit<Lobby, 'clericInfo | knownEvils'>

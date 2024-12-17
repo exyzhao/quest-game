@@ -9,7 +9,7 @@ import { Lobby, Player } from '../../../../types'
 import { QuestRules } from '../../../../server/game/ruleset'
 
 export default function GamePage() {
-  const { lobbyState } = useWebSocketContext()
+  const { sendMessage, lobbyState } = useWebSocketContext()
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
   const { id, role, knownEvils, clericInfo } = usePlayerContext()
@@ -44,17 +44,29 @@ export default function GamePage() {
     if (!isLeader) return // Only the leader can select players
 
     setSelectedPlayers((prevSelected) => {
+      let updatedSelection
+      let updatedToken = tokenHolder
       if (!prevSelected.includes(playerId)) {
         if (prevSelected.length < currentRule.requiredPlayers) {
-          return [...prevSelected, playerId]
+          updatedSelection = [...prevSelected, playerId]
+        } else {
+          updatedSelection = prevSelected
         }
       } else {
         if (tokenHolder === playerId) {
+          updatedToken = null
           setTokenHolder(null)
         }
-        return prevSelected.filter((id) => id !== playerId)
+        updatedSelection = prevSelected.filter((id) => id !== playerId)
       }
-      return prevSelected
+
+      sendMessage({
+        event: 'UPDATE_TEAM',
+        lobbyId,
+        selectedPlayers: updatedSelection,
+        magicTokenHolder: updatedToken,
+      })
+      return updatedSelection
     })
   }
 
@@ -63,13 +75,15 @@ export default function GamePage() {
     if (!isLeader) return // Only the leader can assign the token
 
     setTokenHolder((prevTokenHolder) => {
-      if (prevTokenHolder === playerId) {
-        return null
-      }
-      if (selectedPlayers.includes(playerId)) {
-        return playerId
-      }
-      return prevTokenHolder
+      const updatedToken = prevTokenHolder === playerId ? null : playerId
+
+      sendMessage({
+        event: 'UPDATE_TEAM',
+        lobbyId,
+        selectedPlayers,
+        magicTokenHolder: updatedToken,
+      })
+      return updatedToken
     })
   }
 
@@ -131,7 +145,7 @@ export default function GamePage() {
       )}
       <h2>Players</h2>
       <ul>
-        {lobbyState.players.map((player: any) => {
+        {lobbyState.players.map((player: Player) => {
           return <li key={player.id}>{player.name}</li>
         })}
       </ul>
