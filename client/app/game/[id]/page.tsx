@@ -34,7 +34,7 @@ export default function GamePage() {
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound
   )
-  if (!currentLeader || !currentRule) {
+  if (!currentLeader || !currentRule || !id) {
     return <p>ERRORRRR</p>
   }
   const isLeader = id === currentLeader?.id
@@ -121,11 +121,13 @@ export default function GamePage() {
           </li>
         )
       })}
-      {isLeader ? (
+      {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
         <p>Select {currentRule.requiredPlayers} players for the quest.</p>
-      ) : (
+      )}
+      {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
         <p>Waiting for {currentLeader.name} to select the team...</p>
       )}
+      {lobbyState.phase !== 'TEAM_SELECTION' && <p>Players:</p>}
       {lobbyState.players.map((player) => (
         <div key={player.id}>
           {/* Player Selection Button */}
@@ -170,12 +172,18 @@ export default function GamePage() {
       {isLeader && lobbyState.phase === 'TEAM_SELECTION' ? (
         <button onClick={confirmTeam}>Confirm Team</button>
       ) : null}
-      <h2>Players</h2>
-      <ul>
-        {lobbyState.players.map((player: Player) => {
-          return <li key={player.id}>{player.name}</li>
-        })}
-      </ul>
+
+      {lobbyState.phase === 'QUEST_RESOLUTION' &&
+      lobbyState.currentTeam.includes(id) ? (
+        <>
+          <p>Select result of the quest.</p>
+        </>
+      ) : (
+        <>
+          <p>Waiting for questing team to return...</p>
+        </>
+      )}
+
       {/* Show known evils to evil players */}
       {['Morgan le Fey', 'Minion of Mordred'].includes(role || '') &&
         knownEvils && (
