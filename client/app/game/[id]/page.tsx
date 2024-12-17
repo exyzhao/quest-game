@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useWebSocketContext } from '../../../context/WebSocketContext'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { usePlayerContext } from '../../../context/PlayerContext'
 
 import { Lobby, Player } from '../../../../types'
@@ -13,9 +13,17 @@ export default function GamePage() {
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
   const { id, role, knownEvils, clericInfo } = usePlayerContext()
+  const router = useRouter()
+
+  // Redirect if directly navigating
+  useEffect(() => {
+    if (!lobbyState) {
+      router.push('/')
+    }
+  }, [lobbyState, router])
 
   if (!lobbyState) {
-    return <p>Loading game state...</p>
+    return <p>Loading game...</p>
   }
 
   const currentLeader = lobbyState.players.find(

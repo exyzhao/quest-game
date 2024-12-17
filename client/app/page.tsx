@@ -33,13 +33,8 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // Once lobbyState is available and we've been waiting, check if there's an error or if we can proceed
     if (waiting && lobbyState) {
       // Check if lobbyState indicates a successful join
-      // Normally, if we reach this point, GAME_STATE_UPDATE means the lobby was successfully joined
-      // If the server sends errors via separate events, handle them similarly.
-      // Otherwise, if lobbyState is defined, navigate to /lobby/[lobbyCode]
-
       router.push(`/lobby/${lobbyCode}`)
       setWaiting(false)
     }

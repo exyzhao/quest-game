@@ -10,6 +10,13 @@ export default function Lobby() {
   const lobbyId = pathname.split('/').pop() || ''
   const router = useRouter()
 
+  // Redirect if directly navigating
+  useEffect(() => {
+    if (!lobbyState) {
+      router.push('/')
+    }
+  }, [lobbyState, router])
+
   useEffect(() => {
     if (lobbyState && lobbyState.phase !== 'LOBBY') {
       router.push(`/game/${lobbyId}`)

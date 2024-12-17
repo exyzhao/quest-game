@@ -75,12 +75,6 @@ export const handleJoinGame = (
         knownEvilRoles.includes(reconnectingPlayer.role) &&
         lobby.knownEvils
       ) {
-        console.log(
-          'SENDING EVIL TO RECONNECT ' +
-            reconnectingPlayer.id +
-            ' ' +
-            reconnectingPlayer.name
-        )
         // Resend known evils info
         sendPrivateMessage(wss, reconnectingPlayer.id, {
           event: 'EVIL_INFO',
@@ -272,11 +266,9 @@ export const handleStartGame = (
     )
     if (evils.length > 0) {
       const evilNames = evils.map((e) => e.name)
-      lobby.knownEvils = evilNames // Store known evils
+      lobby.knownEvils = evilNames
 
       evils.forEach((evil) => {
-        console.log('SENDING EVIL TO ' + evil.id + ' ' + evil.name)
-        // Send known evils info
         sendPrivateMessage(wss, evil.id, {
           event: 'EVIL_INFO',
           message: `The known evils are: ${evilNames.join(', ')}.`,
