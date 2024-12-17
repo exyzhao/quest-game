@@ -10,7 +10,15 @@ import React, {
 import { usePlayerContext } from './PlayerContext'
 import { Lobby } from '../../types'
 
-const WebSocketContext = createContext<any>(null)
+interface WebSocketContextValue {
+  isConnected: boolean
+  sendMessage: (message: object) => void
+  lobbyState: Lobby | null
+  errorMessage: string | null
+  clearError: () => void
+}
+
+const WebSocketContext = createContext<WebSocketContextValue | null>(null)
 
 export const WebSocketProvider = ({
   children,
@@ -42,7 +50,9 @@ export const WebSocketProvider = ({
             setLobbyState(parsed.state)
 
           case 'ROLE_ASSIGNED':
-            setId(parsed.id)
+            if (parsed.id) {
+              setId(parsed.id)
+            }
             if (parsed.role) {
               setRole(parsed.role)
             }

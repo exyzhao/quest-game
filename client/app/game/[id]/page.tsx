@@ -14,6 +14,8 @@ export default function GamePage() {
   const lobbyId = pathname.split('/').pop() || ''
   const { id, role, knownEvils, clericInfo } = usePlayerContext()
   const router = useRouter()
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
+  const [tokenHolder, setTokenHolder] = useState<string | null>(null)
 
   // Redirect if directly navigating
   useEffect(() => {
@@ -29,10 +31,47 @@ export default function GamePage() {
   const currentLeader = lobbyState.players.find(
     (player: Player) => player.id === lobbyState.currentLeader
   )
-
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound
   )
+  if (!currentLeader || !currentRule) {
+    return <p>ERRORRRR</p>
+  }
+  const isLeader = id === currentLeader?.id
+
+  // Toggle player selection
+  const togglePlayerSelection = (playerId: string) => {
+    if (!isLeader) return // Only the leader can select players
+
+    setSelectedPlayers((prevSelected) => {
+      if (!prevSelected.includes(playerId)) {
+        if (prevSelected.length < currentRule.requiredPlayers) {
+          return [...prevSelected, playerId]
+        }
+      } else {
+        if (tokenHolder === playerId) {
+          setTokenHolder(null)
+        }
+        return prevSelected.filter((id) => id !== playerId)
+      }
+      return prevSelected
+    })
+  }
+
+  // Toggle token selection
+  const assignToken = (playerId: string) => {
+    if (!isLeader) return // Only the leader can assign the token
+
+    setTokenHolder((prevTokenHolder) => {
+      if (prevTokenHolder === playerId) {
+        return null
+      }
+      if (selectedPlayers.includes(playerId)) {
+        return playerId
+      }
+      return prevTokenHolder
+    })
+  }
 
   // For debugging
   console.log(lobbyState)
@@ -41,7 +80,6 @@ export default function GamePage() {
     <main>
       <h1>Game: {lobbyId}</h1>
       <h2>Your Role: {role}</h2>
-      {currentLeader && <h2>Current Quest Leader: {currentLeader.name}</h2>}
       <h2>
         Quest {lobbyState.currentRound}: {currentRule?.requiredPlayers} players
       </h2>
@@ -52,6 +90,45 @@ export default function GamePage() {
           </li>
         )
       })}
+      {isLeader ? (
+        <>
+          <p>Select {currentRule.requiredPlayers} players for the quest.</p>
+
+          {lobbyState.players.map((player) => (
+            <div key={player.id}>
+              <button
+                onClick={() => togglePlayerSelection(player.id)}
+                style={{
+                  backgroundColor: selectedPlayers.includes(player.id)
+                    ? 'lightblue'
+                    : '',
+                }}
+                disabled={!isLeader}
+              >
+                {player.name} {player.id === id ? '(You)' : ''}
+              </button>
+              {selectedPlayers.includes(player.id) && (
+                <button
+                  onClick={() => assignToken(player.id)}
+                  style={{
+                    marginLeft: '10px',
+                    backgroundColor:
+                      tokenHolder === player.id ? 'gold' : 'white',
+                  }}
+                >
+                  {tokenHolder === player.id
+                    ? 'Token Assigned'
+                    : 'Assign Token'}
+                </button>
+              )}
+            </div>
+          ))}
+
+          <button>Confirm Team</button>
+        </>
+      ) : (
+        <p>Waiting for {currentLeader.name} to select the team...</p>
+      )}
       <h2>Players</h2>
       <ul>
         {lobbyState.players.map((player: any) => {
