@@ -1,4 +1,4 @@
-interface QuestRules {
+export interface QuestRules {
   round: number
   requiredPlayers: number
   failsRequired: number

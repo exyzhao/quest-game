@@ -4,6 +4,7 @@ import { MyWebSocket, MyWebSocketServer, Lobby } from '../../types'
 import * as R from 'remeda'
 import { advancePhase } from '../game/stateMachine'
 import { selectTeam } from '../game/quests'
+import { getQuestRules } from '../game/ruleset'
 
 const lobbies: Record<string, Lobby> = {}
 
@@ -190,6 +191,8 @@ export const handleStartGame = (
     return
   }
 
+  lobby.rules = getQuestRules(lobby.players.length)
+
   try {
     let roles = getRolesForPlayerCount(playerCount)
     roles = roles.map((role) =>
@@ -277,7 +280,7 @@ export const handleStartGame = (
   }
 }
 
-export const handleSelectTeam = (
+export const handleUpdateTeam = (
   ws: MyWebSocket,
   message: {
     lobbyId: string

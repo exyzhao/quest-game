@@ -1,5 +1,6 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { GamePhase } from './server/game/stateMachine'
+import { QuestRules } from './server/game/ruleset'
 
 export interface MyWebSocket extends WebSocket {
   lobbyId?: string
@@ -24,6 +25,7 @@ export interface Lobby {
   clericInfo?: { leaderName: string; leaderAlignment: string }
   knownEvils?: string[]
   veterans: string[]
+  rules?: QuestRules[]
   questHistory: QuestResult[]
   currentLeader?: string
   currentRound: number

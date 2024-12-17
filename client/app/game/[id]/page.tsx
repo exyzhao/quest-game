@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { usePlayerContext } from '../../../context/PlayerContext'
 
 import { Lobby, Player } from '../../../../types'
+import { QuestRules } from '../../../../server/game/ruleset'
 
 export default function GamePage() {
   const { messages } = useWebSocketContext()
@@ -36,6 +37,10 @@ export default function GamePage() {
     (player: Player) => player.id === lobbyState.currentLeader
   )
 
+  const currentRule = lobbyState.rules?.find(
+    (rule) => rule.round === lobbyState.currentRound
+  )
+
   // For debugging
   console.log(lobbyState)
 
@@ -44,6 +49,16 @@ export default function GamePage() {
       <h1>Game: {lobbyId}</h1>
       <h2>Your Role: {role}</h2>
       {currentLeader && <h2>Current Quest Leader: {currentLeader.name}</h2>}
+      <h2>
+        Quest {lobbyState.currentRound}: {currentRule?.requiredPlayers} players
+      </h2>
+      {lobbyState.rules?.map((rule: QuestRules) => {
+        return (
+          <li key={rule.round}>
+            Quest {rule.round}: {rule.requiredPlayers}
+          </li>
+        )
+      })}
       <h2>Players</h2>
       <ul>
         {lobbyState.players.map((player: any) => {
