@@ -10,6 +10,53 @@ export const knownEvilRoles = ['Morgan le Fey', 'Minion of Mordred']
 
 const lobbies: Record<string, Lobby> = {}
 
+export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
+  // TEAM SELECTION
+  const lobbyId = '1234'
+  lobbies[lobbyId] = {
+    lobbyId,
+    phase: 'TEAM_SELECTION',
+    players: [
+      { id: 'player-1', name: 'q', role: 'Morgan le Fey' },
+      { id: 'player-2', name: 'w', role: 'Loyal Servant of Arthur' },
+      { id: 'player-3', name: 'e', role: 'Blind Hunter' },
+      { id: 'player-4', name: 'r', role: 'Cleric' },
+      { id: 'player-5', name: 't', role: 'Youth' },
+      { id: 'player-6', name: 'y', role: 'Troublemaker' },
+    ],
+    disconnectedPlayers: [
+      { id: 'player-1', name: 'q', role: 'Morgan le Fey' },
+      { id: 'player-2', name: 'w', role: 'Loyal Servant of Arthur' },
+      { id: 'player-3', name: 'e', role: 'Blind Hunter' },
+      { id: 'player-4', name: 'r', role: 'Cleric' },
+      { id: 'player-5', name: 't', role: 'Youth' },
+      { id: 'player-6', name: 'y', role: 'Troublemaker' },
+    ],
+    veterans: [],
+    questHistory: [],
+    currentRound: 1,
+    currentTeam: [],
+    magicTokenHolder: null,
+    questSubmissions: [],
+    rules: getQuestRules(6),
+    currentLeader: 'player-1',
+    knownEvils: ['q, w'],
+    clericInfo: {
+      leaderName: 'q',
+      leaderAlignment: 'Evil',
+    },
+  }
+  const lobby = lobbies[lobbyId]
+
+  console.log('Debug state applied to lobby.')
+  console.log(lobby)
+
+  broadcastToLobby(wss, lobbyId, {
+    event: 'GAME_STATE_UPDATE',
+    state: lobby,
+  })
+}
+
 export const handleJoinGame = (
   ws: MyWebSocket,
   message: { lobbyId?: string; playerName?: string },
@@ -48,10 +95,10 @@ export const handleJoinGame = (
   )
   if (reconnectingPlayerIndex !== -1) {
     // Remove the player from disconnectedPlayers only
-    lobby.disconnectedPlayers.splice(reconnectingPlayerIndex, 1)
-
-    // Associate WebSocket with the player's identity
+    // TODO clean up logic
     const reconnectingPlayer = lobby.players.find((p) => p.name === playerName)
+    lobby.disconnectedPlayers.splice(reconnectingPlayerIndex, 1)
+    // Associate WebSocket with the player's identity
     if (reconnectingPlayer) {
       ws.lobbyId = lobbyId
       ws.playerId = reconnectingPlayer.id

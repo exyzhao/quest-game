@@ -73,6 +73,14 @@ export default function Home() {
           {waiting ? 'Joining...' : 'Join Lobby'}
         </button>
       </div>
+      <p>DEV ONLY</p>
+      <button
+        onClick={() => {
+          sendMessage({ event: 'DEBUG_STATE' })
+        }}
+      >
+        SET LOBBY STATE
+      </button>
     </main>
   )
 }

@@ -34,18 +34,21 @@ export default function GamePage() {
   }
 
   if (!id) {
-    return <p>TODO ERROR</p>
+    return <p>TODO ERROR1</p>
   }
 
   const player = lobbyState.players.find((p: Player) => p.id === id)
   const currentLeader = lobbyState.players.find(
     (player: Player) => player.id === lobbyState.currentLeader
   )
+
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound
   )
+
+  console.log(lobbyState)
   if (!player || !currentLeader || !currentRule) {
-    return <p>TODO ERROR</p>
+    return <p>TODO ERROR2</p>
   }
   const isLeader = id === currentLeader?.id
 

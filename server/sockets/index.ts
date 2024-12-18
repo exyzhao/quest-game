@@ -7,6 +7,7 @@ import {
   SUBMIT_QUEST,
 } from './events'
 import {
+  handleDebugState,
   handleJoinGame,
   handleStartGame,
   handleDisconnection,
@@ -40,6 +41,9 @@ export const initWebSockets = (server: import('http').Server) => {
       }
 
       switch (data.event) {
+        case 'DEBUG_STATE':
+          handleDebugState(ws, wss)
+          break
         case JOIN_GAME:
           handleJoinGame(ws, data, wss)
           break
