@@ -14,6 +14,8 @@ import {
   handleUpdateTeam,
   handleConfirmTeam,
   handleSubmitQuest,
+  handleUpdateLeader,
+  handleConfirmLeader,
 } from './handlers'
 import { IncomingMessage } from 'http'
 
@@ -58,6 +60,12 @@ export const initWebSockets = (server: import('http').Server) => {
           break
         case SUBMIT_QUEST:
           handleSubmitQuest(ws, data, wss)
+          break
+        case 'UPDATE_LEADER':
+          handleUpdateLeader(ws, data, wss)
+          break
+        case 'CONFIRM_LEADER':
+          handleConfirmLeader(ws, data, wss)
           break
         default:
           ws.send(JSON.stringify({ error: 'Unknown event: ' + data.event }))

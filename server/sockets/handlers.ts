@@ -3,7 +3,12 @@ import { GAME_STATE_UPDATE } from './events'
 import { MyWebSocket, MyWebSocketServer, Lobby } from '../../shared/types'
 import * as R from 'remeda'
 import { advancePhase } from '../game/stateMachine'
-import { updateTeam, confirmTeam } from '../game/quests'
+import {
+  updateTeam,
+  confirmTeam,
+  updateLeader,
+  confirmLeader,
+} from '../game/quests'
 import { getQuestRules } from '../game/ruleset'
 // import { knownEvilRoles } from '../../shared/constants' TODO
 export const knownEvilRoles = ['Morgan le Fey', 'Minion of Mordred']
@@ -18,7 +23,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     phase: 'TEAM_SELECTION',
     players: [
       { id: 'player-1', name: 'q', role: 'Morgan le Fey' },
-      { id: 'player-2', name: 'w', role: 'Loyal Servant of Arthur' },
+      { id: 'player-2', name: 'w', role: 'Minion of Mordred' },
       { id: 'player-3', name: 'e', role: 'Blind Hunter' },
       { id: 'player-4', name: 'r', role: 'Cleric' },
       { id: 'player-5', name: 't', role: 'Youth' },
@@ -26,7 +31,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     ],
     disconnectedPlayers: [
       { id: 'player-1', name: 'q', role: 'Morgan le Fey' },
-      { id: 'player-2', name: 'w', role: 'Loyal Servant of Arthur' },
+      { id: 'player-2', name: 'w', role: 'Minion of Mordred' },
       { id: 'player-3', name: 'e', role: 'Blind Hunter' },
       { id: 'player-4', name: 'r', role: 'Cleric' },
       { id: 'player-5', name: 't', role: 'Youth' },
@@ -40,6 +45,8 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     questSubmissions: [],
     rules: getQuestRules(6),
     currentLeader: 'player-1',
+    upcomingLeader: null,
+    amuletHolder: null,
     knownEvils: ['q, w'],
     clericInfo: {
       leaderName: 'q',
@@ -80,6 +87,9 @@ export const handleJoinGame = (
       disconnectedPlayers: [],
       veterans: [],
       questHistory: [],
+      currentLeader: null,
+      upcomingLeader: null,
+      amuletHolder: null,
       currentRound: 0,
       currentTeam: [],
       magicTokenHolder: null,
@@ -399,6 +409,10 @@ export const handleSubmitQuest = (
       )
       return
     }
+    if (!lobby.currentLeader) {
+      ws.send(JSON.stringify({ event: 'ERROR', error: 'No leader found.' }))
+      return
+    }
 
     if (!lobby.questSubmissions) {
       lobby.questSubmissions = []
@@ -444,6 +458,7 @@ export const handleSubmitQuest = (
         fails: numFails,
         result: questResult,
       })
+      lobby.veterans.push(lobby.currentLeader)
 
       lobby.questSubmissions = []
       lobby.currentTeam = []
@@ -458,6 +473,45 @@ export const handleSubmitQuest = (
       // Inform the player their card was submitted successfully
       ws.send(JSON.stringify({ event: 'CARD_RECEIVED', playerId }))
     }
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const handleUpdateLeader = (
+  ws: MyWebSocket,
+  message: {
+    lobbyId: string
+    updatedLeader: string
+  },
+  wss: MyWebSocketServer
+) => {
+  const { lobbyId, updatedLeader } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    updateLeader(lobby, updatedLeader)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const handleConfirmLeader = (
+  ws: MyWebSocket,
+  message: { lobbyId: string },
+  wss: MyWebSocketServer
+) => {
+  const { lobbyId } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    confirmLeader(lobby)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
   } catch (e) {
     ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
   }

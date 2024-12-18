@@ -52,55 +52,21 @@ export const confirmTeam = (lobby: Lobby) => {
   advancePhase(lobby)
 }
 
-/**
- * Executes the quest logic once the team is set and the magic token is assigned.
- */
-export function executeQuest(lobby: Lobby) {
-  const rules = getQuestRules(lobby.players.length)
-  const currentQuestRule = rules.find((r) => r.round === lobby.currentRound)
-  if (!currentQuestRule) throw new Error('Invalid quest round.')
+export const updateLeader = (lobby: Lobby, updatedLeader: string) => {
+  lobby.upcomingLeader = updatedLeader
+}
 
-  const failsRequired = currentQuestRule['failsRequired']
-
-  const teamPlayers = lobby.players.filter((p) =>
-    lobby.currentTeam?.includes(p.id)
-  )
-
-  // Determine how many fails played
-  let failCount = 0
-
-  for (const player of teamPlayers) {
-    const isEvil = isPlayerEvil(player.role || '')
-    // Assume evils always pass
-    if (isEvil) {
-      // Check if they are the magic token holder
-      if (lobby.magicTokenHolder && lobby.magicTokenHolder === player.id) {
-        // Forced to pass
-      } else {
-        failCount++
-      }
-    }
+export const confirmLeader = (lobby: Lobby) => {
+  if (!lobby.upcomingLeader) {
+    throw new Error('No leader is selected.')
+  }
+  if (lobby.veterans.includes(lobby.upcomingLeader)) {
+    throw new Error(`${lobby.upcomingLeader} is a veteran.`)
   }
 
-  const result = failCount >= failsRequired ? 'Failed' : 'Passed'
+  lobby.currentLeader = lobby.upcomingLeader
+  lobby.upcomingLeader = null
+  lobby.currentRound++
 
-  const questResult: QuestResult = {
-    round: lobby.currentRound,
-    team: lobby.currentTeam || [],
-    fails: failCount,
-    result: result,
-  }
-
-  lobby.questHistory.push(questResult)
-
-  // Clear per-quest variables
-  lobby.currentTeam = []
-  lobby.magicTokenHolder = null
-
-  // Increment round if not over
-  if (result === 'Passed' || result === 'Failed') {
-    lobby.currentRound++
-  }
-
-  // advancePhase(lobby)
+  advancePhase(lobby)
 }

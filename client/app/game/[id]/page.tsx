@@ -29,6 +29,16 @@ export default function GamePage() {
     }
   }, [lobbyState, router])
 
+  useEffect(() => resetState(), [lobbyState?.currentRound])
+
+  const resetState = () => {
+    setSelectedPlayers([])
+    setTokenHolder(null)
+    setPassQuest(null)
+    setIsQuestCardSubmited(false)
+    setSelectedLeader(null)
+  }
+
   if (!lobbyState) {
     return <p>Loading game...</p>
   }
@@ -46,7 +56,6 @@ export default function GamePage() {
     (rule: QuestRules) => rule.round === lobbyState.currentRound
   )
 
-  console.log(lobbyState)
   if (!player || !currentLeader || !currentRule) {
     return <p>TODO ERROR2</p>
   }
@@ -105,15 +114,15 @@ export default function GamePage() {
     setSelectedLeader((prevSelectedLeader) => {
       const updatedLeader = prevSelectedLeader === playerId ? null : playerId
 
-      // sendMessage({
-      //   event: 'UPDATE_LEADER',
-      //   lobbyId,
-      // })
+      sendMessage({
+        event: 'UPDATE_LEADER',
+        lobbyId,
+        updatedLeader,
+      })
       return updatedLeader
     })
   }
 
-  // Confirm the team and token assignment
   const confirmTeam = () => {
     if (selectedPlayers.length !== currentRule.requiredPlayers) {
       alert(`Please select exactly ${currentRule.requiredPlayers} players.`)
@@ -126,6 +135,19 @@ export default function GamePage() {
 
     sendMessage({
       event: 'CONFIRM_TEAM',
+      lobbyId,
+    })
+  }
+
+  // Confirm the leader
+  const confirmLeader = () => {
+    if (!selectedLeader) {
+      alert('Please assign the next leader.')
+      return
+    }
+
+    sendMessage({
+      event: 'CONFIRM_LEADER',
       lobbyId,
     })
   }
@@ -243,7 +265,12 @@ export default function GamePage() {
                 ? 'lightblue' // Highlight players currently on the team
                 : '',
             }}
-            disabled={!isLeader || lobbyState.phase === 'QUEST_RESOLUTION'} // Disable for non-leaders
+            disabled={
+              !isLeader ||
+              lobbyState.phase === 'QUEST_RESOLUTION' ||
+              (lobbyState.phase === 'LEADER_SELECTION' &&
+                lobbyState.veterans.includes(player.id))
+            } // Disable for non-leaders
           >
             {player.name} {player.id === id ? '(You)' : ''}
           </button>
@@ -272,6 +299,9 @@ export default function GamePage() {
       ))}
       {isLeader && lobbyState.phase === 'TEAM_SELECTION' ? (
         <button onClick={confirmTeam}>Confirm Team</button>
+      ) : null}
+      {isLeader && lobbyState.phase === 'LEADER_SELECTION' ? (
+        <button onClick={confirmLeader}>Confirm Leader</button>
       ) : null}
 
       <QuestResolution />

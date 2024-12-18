@@ -23,11 +23,13 @@ export interface Lobby {
   players: Player[]
   disconnectedPlayers: Player[] // Track players who disconnected during the game
   clericInfo?: { leaderName: string; leaderAlignment: string }
-  knownEvils?: string[]
-  veterans: string[]
+  knownEvils?: string[] // Player names
+  veterans: string[] // Player ids
   rules?: QuestRules[]
   questHistory: QuestResult[]
-  currentLeader?: string
+  currentLeader: string | null
+  upcomingLeader: string | null
+  amuletHolder: string | null
   currentRound: number
   currentTeam: string[]
   magicTokenHolder: string | null
