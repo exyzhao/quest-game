@@ -77,6 +77,10 @@ export const WebSocketProvider = ({
             }
             break
 
+          case 'CARD_RECEIVED':
+            // Can be used for debugging
+            break
+
           case 'ERROR':
             setErrorMessage(parsed.error || 'An unknown error has occurred.')
             break

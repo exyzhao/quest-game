@@ -163,6 +163,7 @@ export default function GamePage() {
               sendMessage({
                 event: 'SUBMIT_QUEST',
                 lobbyId,
+                playerId: id,
                 isQuestCardPass: passQuest,
               })
               setIsQuestCardSubmited(true)

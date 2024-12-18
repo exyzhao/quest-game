@@ -36,6 +36,7 @@ export const handleJoinGame = (
       currentRound: 0,
       currentTeam: [],
       magicTokenHolder: null,
+      questSubmissions: [],
     }
   }
 
@@ -321,6 +322,95 @@ export const handleConfirmTeam = (
       event: GAME_STATE_UPDATE,
       state: lobby,
     })
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const handleSubmitQuest = (
+  ws: MyWebSocket,
+  message: { lobbyId: string; playerId: string; isQuestCardPass: boolean },
+  wss: MyWebSocketServer
+) => {
+  const { lobbyId, playerId, isQuestCardPass } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    if (!lobby) {
+      ws.send(JSON.stringify({ event: 'ERROR', error: 'Lobby not found.' }))
+      return
+    }
+    if (lobby.phase !== 'QUEST_RESOLUTION') {
+      ws.send(JSON.stringify({ event: 'ERROR', error: 'Not the right phase.' }))
+      return
+    }
+    if (!lobby.currentTeam.includes(playerId)) {
+      ws.send(
+        JSON.stringify({
+          event: 'ERROR',
+          error: 'You are not on the quest team.',
+        })
+      )
+      return
+    }
+
+    if (!lobby.questSubmissions) {
+      lobby.questSubmissions = []
+    }
+
+    // Prevent duplicate submissions
+    const alreadySubmitted = lobby.questSubmissions.some(
+      (submission) => submission.playerId === playerId
+    )
+    if (alreadySubmitted) {
+      ws.send(
+        JSON.stringify({ event: 'ERROR', error: 'Card already submitted.' })
+      )
+      return
+    }
+
+    lobby.questSubmissions.push({ playerId, isQuestCardPass })
+
+    if (lobby.questSubmissions.length === lobby.currentTeam.length) {
+      const numFails = lobby.questSubmissions.filter(
+        (submission) => !submission.isQuestCardPass
+      ).length
+
+      const rules = getQuestRules(lobby.players.length)
+      const currentQuest = rules.find((r) => r.round === lobby.currentRound)
+
+      if (!currentQuest) {
+        ws.send(
+          JSON.stringify({
+            event: 'ERROR',
+            error: 'Current quest rules not found.',
+          })
+        )
+        return
+      }
+      const questResult =
+        numFails >= currentQuest?.failsRequired ? 'Failed' : 'Passed'
+
+      // Store the result in quest history
+      lobby.questHistory.push({
+        round: lobby.currentRound,
+        team: lobby.currentTeam,
+        fails: numFails,
+        result: questResult,
+      })
+
+      lobby.questSubmissions = []
+      lobby.currentTeam = []
+      lobby.magicTokenHolder = null
+
+      advancePhase(lobby)
+      broadcastToLobby(wss, lobbyId, {
+        event: 'GAME_STATE_UPDATE',
+        state: lobby,
+      })
+    } else {
+      // Inform the player their card was submitted successfully
+      ws.send(JSON.stringify({ event: 'CARD_RECEIVED', playerId }))
+    }
   } catch (e) {
     ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
   }
