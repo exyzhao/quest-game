@@ -20,6 +20,7 @@ export default function GamePage() {
   const [passQuest, setPassQuest] = useState<boolean | null>(null)
   const [isQuestCardSubmitted, setIsQuestCardSubmited] =
     useState<boolean>(false)
+  const [selectedLeader, setSelectedLeader] = useState<string | null>(null)
 
   // Redirect if directly navigating
   useEffect(() => {
@@ -48,7 +49,6 @@ export default function GamePage() {
   }
   const isLeader = id === currentLeader?.id
 
-  // Toggle player selection
   const togglePlayerSelection = (playerId: string) => {
     if (!isLeader) return // Only the leader can select players
 
@@ -93,6 +93,20 @@ export default function GamePage() {
         magicTokenHolder: updatedToken,
       })
       return updatedToken
+    })
+  }
+
+  const toggleLeaderSelection = (playerId: string) => {
+    if (!isLeader) return
+
+    setSelectedLeader((prevSelectedLeader) => {
+      const updatedLeader = prevSelectedLeader === playerId ? null : playerId
+
+      // sendMessage({
+      //   event: 'UPDATE_LEADER',
+      //   lobbyId,
+      // })
+      return updatedLeader
     })
   }
 
@@ -200,22 +214,33 @@ export default function GamePage() {
       {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
         <p>Waiting for {currentLeader.name} to select the team...</p>
       )}
-      {lobbyState.phase !== 'TEAM_SELECTION' && <p>Players:</p>}
+      {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
+        <p>Select the next quest leader.</p>
+      )}
+      {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
+        <p>
+          Waiting for {currentLeader.name} to select the next quest leader...
+        </p>
+      )}
+      {lobbyState.phase === 'QUEST_RESOLUTION' && <p>Players:</p>}
       {lobbyState.players.map((player) => (
         <div key={player.id}>
           {/* Player Selection Button */}
           <button
-            onClick={() =>
-              isLeader &&
-              lobbyState.phase === 'TEAM_SELECTION' &&
-              togglePlayerSelection(player.id)
-            } // Only the leader can interact
+            onClick={() => {
+              if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
+                togglePlayerSelection(player.id)
+              }
+              if (isLeader && lobbyState.phase === 'LEADER_SELECTION') {
+                toggleLeaderSelection(player.id)
+              }
+            }} // Only the leader can interact
             style={{
               backgroundColor: lobbyState.currentTeam.includes(player.id)
                 ? 'lightblue' // Highlight players currently on the team
                 : '',
             }}
-            disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'} // Disable for non-leaders
+            disabled={!isLeader || lobbyState.phase === 'QUEST_RESOLUTION'} // Disable for non-leaders
           >
             {player.name} {player.id === id ? '(You)' : ''}
           </button>
