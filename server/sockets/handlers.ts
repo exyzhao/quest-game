@@ -47,6 +47,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     currentLeader: 'player-1',
     upcomingLeader: null,
     amuletHolder: null,
+    isHunting: false,
     knownEvils: ['q, w'],
     clericInfo: {
       leaderName: 'q',
@@ -94,6 +95,7 @@ export const handleJoinGame = (
       currentTeam: [],
       magicTokenHolder: null,
       questSubmissions: [],
+      isHunting: false,
     }
   }
 

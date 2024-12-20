@@ -1,5 +1,4 @@
-import { broadcastToLobby } from '../sockets/handlers'
-import { MyWebSocketServer, Lobby } from '../../shared/types'
+import { Lobby } from '../../shared/types'
 
 export type GamePhase =
   | 'LOBBY'
@@ -7,7 +6,10 @@ export type GamePhase =
   | 'QUEST_RESOLUTION'
   | 'LEADER_SELECTION'
   | 'AMULET_USAGE'
-  | 'ENDGAME_DISCUSSION'
+  | 'THE_DISCUSSION'
+  | 'THE_HUNT'
+  | 'GOODS_LAST_CHANCE'
+  | 'GOOD_VICTORY'
   | 'GAME_OVER'
 
 /**
@@ -25,8 +27,15 @@ export const advancePhase = (lobby: Lobby) => {
       break
 
     case 'QUEST_RESOLUTION':
-      if (isGameOver(lobby)) {
-        lobby.phase = 'GAME_OVER'
+      const goodWins =
+        lobby.questHistory.filter((q) => q.result === 'Passed').length >= 3
+      const evilWins =
+        lobby.questHistory.filter((q) => q.result === 'Failed').length >= 3
+
+      if (goodWins) {
+        lobby.phase = 'GOOD_VICTORY'
+      } else if (evilWins) {
+        lobby.phase = 'THE_DISCUSSION'
       } else {
         lobby.phase = 'LEADER_SELECTION'
       }
@@ -34,6 +43,18 @@ export const advancePhase = (lobby: Lobby) => {
 
     case 'LEADER_SELECTION':
       lobby.phase = 'TEAM_SELECTION'
+      break
+
+    case 'THE_HUNT':
+      if (lobby.isHunting) {
+        lobby.phase = 'GAME_OVER'
+      } else {
+        lobby.phase = 'GOODS_LAST_CHANCE'
+      }
+      break
+
+    case 'GOODS_LAST_CHANCE':
+      lobby.phase = 'GAME_OVER'
       break
 
     case 'GAME_OVER':
@@ -45,5 +66,3 @@ export const advancePhase = (lobby: Lobby) => {
 
   console.log(lobby)
 }
-
-const isGameOver = (lobby: Lobby) => false
