@@ -15,6 +15,7 @@ export interface Player {
   id: string
   name: string
   role?: string
+  pointers?: string[] // TODO: Make this null or undefined?
 }
 
 export interface Lobby {
@@ -35,6 +36,7 @@ export interface Lobby {
   magicTokenHolder: string | null
   questSubmissions: { playerId: string; isQuestCardPass: boolean }[]
   isHunting: boolean
+  hunted?: { playerId: string; role: string }[]
 }
 
 export type sanitizedLobby = Omit<Lobby, 'clericInfo | knownEvils'>

@@ -10,7 +10,7 @@ export type GamePhase =
   | 'THE_HUNT'
   | 'GOODS_LAST_CHANCE'
   | 'GOOD_VICTORY'
-  | 'GAME_OVER'
+  | 'EVIL_VICTORY'
 
 /**
  * Advances the state of the game. Remember to broadcast lobby state after calling.
@@ -47,17 +47,16 @@ export const advancePhase = (lobby: Lobby) => {
 
     case 'THE_HUNT':
       if (lobby.isHunting) {
-        lobby.phase = 'GAME_OVER'
+        const huntSuccessful = isHuntSuccessful(lobby)
+        lobby.phase = huntSuccessful ? 'EVIL_VICTORY' : 'GOOD_VICTORY'
       } else {
         lobby.phase = 'GOODS_LAST_CHANCE'
       }
       break
 
     case 'GOODS_LAST_CHANCE':
-      lobby.phase = 'GAME_OVER'
-      break
-
-    case 'GAME_OVER':
+      const pointingSuccessful = isPointingSuccessful(lobby) // Define this logic
+      lobby.phase = pointingSuccessful ? 'GOOD_VICTORY' : 'EVIL_VICTORY'
       break
 
     default:
@@ -65,4 +64,19 @@ export const advancePhase = (lobby: Lobby) => {
   }
 
   console.log(lobby)
+}
+
+const isHuntSuccessful = (lobby: Lobby) => {
+  if (lobby.hunted?.length !== 2) {
+    throw new Error('Must hunt exactly two players.')
+  }
+  return lobby.hunted.every(
+    (hunt) =>
+      hunt.role === lobby.players.find((p) => p.id === hunt.playerId)?.role
+  )
+}
+
+const isPointingSuccessful = (lobby: Lobby) => {
+  // TODO
+  return true
 }
