@@ -78,13 +78,20 @@ export default function GamePage() {
         const twoFailsRequired = rule.failsRequired === 2
 
         return (
-          <div className="flex w-16 flex-col items-center gap-2">
+          <div
+            key={rule.round}
+            className="relative flex w-16 flex-col items-center gap-2"
+          >
             <div
-              key={rule.round}
               className={`flex h-16 w-16 items-center justify-center rounded-full ${questColor} text-3xl text-slate-100`}
             >
               <p>{rule.requiredPlayers}</p>
             </div>
+            {quest?.result === 'Failed' ? (
+              <div className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-slate-100">
+                <p>{quest.fails}</p>
+              </div>
+            ) : null}
             <div className="text-center text-sm">
               {twoFailsRequired ? <p>2 fails required</p> : null}
             </div>
