@@ -61,6 +61,39 @@ export default function GamePage() {
   }
   const isLeader = id === currentLeader?.id
 
+  const QuestRoadmap = () => (
+    <div className="flex max-w-md justify-around">
+      {lobbyState.rules?.map((rule: QuestRules) => {
+        const quest = lobbyState.questHistory?.find(
+          (q) => q.round === rule.round,
+        )
+
+        const questColor =
+          quest?.result === 'Passed'
+            ? 'bg-blue-500'
+            : quest?.result === 'Failed'
+              ? 'bg-red-500'
+              : 'bg-stone-500'
+
+        const twoFailsRequired = rule.failsRequired === 2
+
+        return (
+          <div className="flex w-16 flex-col items-center gap-2">
+            <div
+              key={rule.round}
+              className={`flex h-16 w-16 items-center justify-center rounded-full ${questColor} text-3xl text-slate-100`}
+            >
+              <p>{rule.requiredPlayers}</p>
+            </div>
+            <div className="text-center text-sm">
+              {twoFailsRequired ? <p>2 fails required</p> : null}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+
   const togglePlayerSelection = (playerId: string) => {
     if (!isLeader) return // Only the leader can select players
 
@@ -235,89 +268,83 @@ export default function GamePage() {
   console.log(lobbyState)
 
   return (
-    <main>
+    // TODO: refactor main into component
+    <main className="flex flex-col gap-6">
       <h1>Game: {lobbyId}</h1>
       <h2>Your Role: {role}</h2>
-      <div className="flex justify-around">
-        {lobbyState.rules?.map((rule: QuestRules) => {
-          return (
-            <div
-              key={rule.round}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-500 text-slate-100"
-            >
-              <p>{rule.requiredPlayers}</p>
-            </div>
-          )
-        })}
-      </div>
-      {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
-        <p>Select {currentRule.requiredPlayers} players for the quest.</p>
-      )}
-      {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
-        <p>Waiting for {currentLeader.name} to select the team...</p>
-      )}
-      {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
-        <p>Select the next quest leader.</p>
-      )}
-      {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
-        <p>
-          Waiting for {currentLeader.name} to select the next quest leader...
-        </p>
-      )}
-      {lobbyState.phase === 'QUEST_RESOLUTION' && <p>Players:</p>}
-      {lobbyState.players.map((player) => (
-        <div key={player.id}>
-          {/* Player Selection Button */}
-          <button
-            onClick={() => {
-              if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
-                togglePlayerSelection(player.id)
-              }
-              if (isLeader && lobbyState.phase === 'LEADER_SELECTION') {
-                toggleLeaderSelection(player.id)
-              }
-            }} // Only the leader can interact
-            style={{
-              backgroundColor: buttonColor(player.id),
-            }}
-            disabled={
-              !isLeader ||
-              lobbyState.phase === 'QUEST_RESOLUTION' ||
-              (lobbyState.phase === 'LEADER_SELECTION' &&
-                lobbyState.veterans.includes(player.id))
-            } // Disable for non-leaders
-          >
-            {player.name} {player.id === id ? '(You)' : ''}
-          </button>
-
-          {/* Token Assignment Button */}
-          {lobbyState.currentTeam.includes(player.id) && (
+      <QuestRoadmap />
+      <div>
+        {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
+          <p>Select {currentRule.requiredPlayers} players for the quest.</p>
+        )}
+        {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
+          <p>Waiting for {currentLeader.name} to select the team...</p>
+        )}
+        {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
+          <p>Select the next quest leader.</p>
+        )}
+        {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
+          <p>
+            Waiting for {currentLeader.name} to select the next quest leader...
+          </p>
+        )}
+        {lobbyState.phase === 'QUEST_RESOLUTION' && <p>Players:</p>}
+        {lobbyState.players.map((player) => (
+          <div key={player.id}>
+            {/* Player Selection Button */}
             <button
-              onClick={() =>
-                isLeader &&
-                lobbyState.phase === 'TEAM_SELECTION' &&
-                assignToken(player.id)
-              } // Only leader can interact
+              onClick={() => {
+                if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
+                  togglePlayerSelection(player.id)
+                }
+                if (isLeader && lobbyState.phase === 'LEADER_SELECTION') {
+                  toggleLeaderSelection(player.id)
+                }
+              }} // Only the leader can interact
               style={{
-                marginLeft: '10px',
-                backgroundColor:
-                  lobbyState.magicTokenHolder === player.id ? 'gold' : 'white',
+                backgroundColor: buttonColor(player.id),
               }}
-              disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'} // Disable for non-leaders
+              disabled={
+                !isLeader ||
+                lobbyState.phase === 'QUEST_RESOLUTION' ||
+                (lobbyState.phase === 'LEADER_SELECTION' &&
+                  lobbyState.veterans.includes(player.id))
+              } // Disable for non-leaders
             >
-              {lobbyState.magicTokenHolder === player.id
-                ? 'Token Assigned'
-                : 'Assign Token'}
+              {player.name} {player.id === id ? '(You)' : ''}
             </button>
-          )}
-        </div>
-      ))}
-      {isLeader && lobbyState.phase === 'TEAM_SELECTION' ? (
-        <button onClick={confirmTeam}>Confirm Team</button>
-      ) : null}
-      {isLeader && lobbyState.phase === 'LEADER_SELECTION' ? (
-        <button onClick={confirmLeader}>Confirm Leader</button>
-      ) : null}
+
+            {/* Token Assignment Button */}
+            {lobbyState.currentTeam.includes(player.id) && (
+              <button
+                onClick={() =>
+                  isLeader &&
+                  lobbyState.phase === 'TEAM_SELECTION' &&
+                  assignToken(player.id)
+                } // Only leader can interact
+                style={{
+                  marginLeft: '10px',
+                  backgroundColor:
+                    lobbyState.magicTokenHolder === player.id
+                      ? 'gold'
+                      : 'white',
+                }}
+                disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'} // Disable for non-leaders
+              >
+                {lobbyState.magicTokenHolder === player.id
+                  ? 'Token Assigned'
+                  : 'Assign Token'}
+              </button>
+            )}
+          </div>
+        ))}
+        {isLeader && lobbyState.phase === 'TEAM_SELECTION' ? (
+          <button onClick={confirmTeam}>Confirm Team</button>
+        ) : null}
+        {isLeader && lobbyState.phase === 'LEADER_SELECTION' ? (
+          <button onClick={confirmLeader}>Confirm Leader</button>
+        ) : null}
+      </div>
 
       <QuestResolution />
 
