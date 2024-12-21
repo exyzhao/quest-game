@@ -49,11 +49,11 @@ export default function GamePage() {
 
   const player = lobbyState.players.find((p: Player) => p.id === id)
   const currentLeader = lobbyState.players.find(
-    (player: Player) => player.id === lobbyState.currentLeader
+    (player: Player) => player.id === lobbyState.currentLeader,
   )
 
   const currentRule = lobbyState.rules?.find(
-    (rule: QuestRules) => rule.round === lobbyState.currentRound
+    (rule: QuestRules) => rule.round === lobbyState.currentRound,
   )
 
   if (!player || !currentLeader || !currentRule) {
@@ -238,14 +238,14 @@ export default function GamePage() {
     <main>
       <h1>Game: {lobbyId}</h1>
       <h2>Your Role: {role}</h2>
-      <h2>
-        Quest {lobbyState.currentRound}: {currentRule?.requiredPlayers} players
-      </h2>
-      <div>
+      <div className="flex justify-around">
         {lobbyState.rules?.map((rule: QuestRules) => {
           return (
-            <div key={rule.round}>
-              Quest {rule.round}: {rule.requiredPlayers}
+            <div
+              key={rule.round}
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-500 text-slate-100"
+            >
+              <p>{rule.requiredPlayers}</p>
             </div>
           )
         })}
