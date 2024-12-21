@@ -68,7 +68,7 @@ export default function GamePage() {
   ].includes(player.role ?? '')
 
   const QuestRoadmap = () => (
-    <div className="flex max-w-md justify-around">
+    <div className="mx-auto flex max-w-md justify-around gap-2">
       {lobbyState.rules?.map((rule: QuestRules) => {
         const quest = lobbyState.questHistory?.find(
           (q) => q.round === rule.round,
