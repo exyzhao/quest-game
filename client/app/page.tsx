@@ -48,9 +48,8 @@ export default function Home() {
   }, [errorMessage])
 
   return (
-    <main style={{ padding: '20px' }}>
-      <h1>Welcome to Quest</h1>
-      <p>Enter your name and lobby code to join a game.</p>
+    <main>
+      <p>Enter a lobby code and your name to start/join a game.</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <div>
         <input
@@ -81,6 +80,13 @@ export default function Home() {
       >
         SET LOBBY STATE
       </button>
+      <p>
+        Welcome to Don Eskridge's Quest, a newer social deduction game similar
+        to Avalon.
+      </p>
+      <p>
+        This set contains the roles for the Director's Cut for 4-10 players.
+      </p>
     </main>
   )
 }

@@ -89,12 +89,12 @@ export default function GamePage() {
             className="relative flex w-16 flex-col items-center gap-2"
           >
             <div
-              className={`flex h-16 w-16 items-center justify-center rounded-full ${questColor} text-4xl text-slate-100`}
+              className={`flex h-16 w-16 items-center justify-center rounded-full ${questColor} text-4xl text-zinc-100`}
             >
               <p>{rule.requiredPlayers}</p>
             </div>
             {quest?.result === 'Failed' ? (
-              <div className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-slate-100">
+              <div className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-zinc-100">
                 <p>{quest.fails}</p>
               </div>
             ) : null}

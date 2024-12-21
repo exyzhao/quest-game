@@ -8,6 +8,7 @@ body {
 
 button {
   border: 1px solid;
+  padding: 0 6px;
 }
 
 button:disabled {
