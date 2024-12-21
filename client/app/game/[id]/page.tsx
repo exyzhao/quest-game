@@ -83,7 +83,7 @@ export default function GamePage() {
             className="relative flex w-16 flex-col items-center gap-2"
           >
             <div
-              className={`flex h-16 w-16 items-center justify-center rounded-full ${questColor} text-3xl text-slate-100`}
+              className={`flex h-16 w-16 items-center justify-center rounded-full ${questColor} text-4xl text-slate-100`}
             >
               <p>{rule.requiredPlayers}</p>
             </div>
@@ -92,7 +92,7 @@ export default function GamePage() {
                 <p>{quest.fails}</p>
               </div>
             ) : null}
-            <div className="text-center text-sm">
+            <div className="text-center text-sm leading-4">
               {twoFailsRequired ? <p>2 fails required</p> : null}
             </div>
           </div>
@@ -277,9 +277,8 @@ export default function GamePage() {
   return (
     // TODO: refactor main into component
     <main className="flex flex-col gap-6">
-      <h1>Game: {lobbyId}</h1>
-      <h2>Your Role: {role}</h2>
       <QuestRoadmap />
+      <h2>Your Role: {role}</h2>
       <div>
         {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
           <p>Select {currentRule.requiredPlayers} players for the quest.</p>
@@ -295,7 +294,13 @@ export default function GamePage() {
             Waiting for {currentLeader.name} to select the next quest leader...
           </p>
         )}
-        {lobbyState.phase === 'QUEST_RESOLUTION' && <p>Players:</p>}
+        {lobbyState.phase === 'QUEST_RESOLUTION' && (
+          <p>Waiting for the team to resolve the quest...</p>
+        )}
+        {lobbyState.phase === 'THE_DISCUSSION' && (
+          <p>Begin a discussion phase for 5 minutes.</p>
+        )}
+        {/* TODO: more descriptive text */}
         {lobbyState.players.map((player) => (
           <div key={player.id}>
             {/* Player Selection Button */}
@@ -315,8 +320,10 @@ export default function GamePage() {
                 !isLeader ||
                 lobbyState.phase === 'QUEST_RESOLUTION' ||
                 (lobbyState.phase === 'LEADER_SELECTION' &&
-                  lobbyState.veterans.includes(player.id))
+                  lobbyState.veterans.includes(player.id)) ||
+                lobbyState.phase === 'THE_DISCUSSION'
               } // Disable for non-leaders
+              className="w-40 text-center"
             >
               {player.name} {player.id === id ? '(You)' : ''}
             </button>

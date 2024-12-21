@@ -3,10 +3,13 @@
 @tailwind utilities;
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  @apply font-serif;
 }
 
 button {
   border: 1px solid;
+}
+
+button:disabled {
+  background-color: gray;
 }

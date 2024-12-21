@@ -38,7 +38,6 @@ export default function Lobby() {
 
   return (
     <main>
-      <h1>Lobby: {lobbyId}</h1>
       <h2>Players</h2>
       <ul>
         {lobbyState.players.map((player: any) => (
