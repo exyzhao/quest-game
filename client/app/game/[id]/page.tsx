@@ -61,6 +61,12 @@ export default function GamePage() {
   }
   const isLeader = id === currentLeader?.id
 
+  const isGoodPlayer = ![
+    'Morgan le Fey',
+    'Minion of Mordred',
+    'Blind Hunter',
+  ].includes(player.role ?? '')
+
   const QuestRoadmap = () => (
     <div className="flex max-w-md justify-around">
       {lobbyState.rules?.map((rule: QuestRules) => {
@@ -203,12 +209,6 @@ export default function GamePage() {
     const isYouthTokened =
       player.role === 'Youth' && lobbyState.magicTokenHolder === id
 
-    const isGoodPlayer = ![
-      'Morgan le Fey',
-      'Minion of Mordred',
-      'Blind Hunter',
-    ].includes(player.role ?? '')
-
     const isEvilTokened =
       ['Minion of Mordred', 'Blind Hunter'].includes(player.role ?? '') &&
       lobbyState.magicTokenHolder === id
@@ -278,7 +278,12 @@ export default function GamePage() {
     // TODO: refactor main into component
     <main className="flex flex-col gap-6">
       <QuestRoadmap />
-      <h2>Your Role: {role}</h2>
+      <h2>
+        Your Role:{' '}
+        <span className={`${isGoodPlayer ? 'text-blue-800' : 'text-red-800'}`}>
+          {role}
+        </span>
+      </h2>
       <div>
         {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
           <p>Select {currentRule.requiredPlayers} players for the quest.</p>
