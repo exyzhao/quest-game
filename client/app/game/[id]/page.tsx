@@ -216,6 +216,21 @@ export default function GamePage() {
     )
   }
 
+  // Set color of button if player is selected
+  const buttonColor = (playerId: string) => {
+    if (lobbyState.currentTeam.includes(playerId)) {
+      return 'lightblue'
+    }
+    if (
+      lobbyState.phase === 'LEADER_SELECTION' &&
+      selectedLeader === playerId
+    ) {
+      return 'lightblue'
+    } else {
+      return ''
+    }
+  }
+
   // For debugging
   console.log(lobbyState)
 
@@ -226,13 +241,15 @@ export default function GamePage() {
       <h2>
         Quest {lobbyState.currentRound}: {currentRule?.requiredPlayers} players
       </h2>
-      {lobbyState.rules?.map((rule: QuestRules) => {
-        return (
-          <li key={rule.round}>
-            Quest {rule.round}: {rule.requiredPlayers}
-          </li>
-        )
-      })}
+      <div>
+        {lobbyState.rules?.map((rule: QuestRules) => {
+          return (
+            <div key={rule.round}>
+              Quest {rule.round}: {rule.requiredPlayers}
+            </div>
+          )
+        })}
+      </div>
       {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
         <p>Select {currentRule.requiredPlayers} players for the quest.</p>
       )}
@@ -261,9 +278,7 @@ export default function GamePage() {
               }
             }} // Only the leader can interact
             style={{
-              backgroundColor: lobbyState.currentTeam.includes(player.id)
-                ? 'lightblue' // Highlight players currently on the team
-                : '',
+              backgroundColor: buttonColor(player.id),
             }}
             disabled={
               !isLeader ||
