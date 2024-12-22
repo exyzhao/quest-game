@@ -237,7 +237,7 @@ export default function GamePage() {
       alert('Please assign the next leader.')
       return
     }
-    if (!lobbyState.amuletHolder) {
+    if (currentRule.amulet && !lobbyState.amuletHolder) {
       alert('Please assign the next amulet holder.')
       return
     }

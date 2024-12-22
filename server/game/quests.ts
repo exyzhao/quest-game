@@ -61,17 +61,21 @@ export const updateAmulet = (lobby: Lobby, updatedAmulet: string) => {
 }
 
 export const confirmLeader = (lobby: Lobby) => {
+  const rules = getQuestRules(lobby.players.length)
+  const currentRule = rules.find((r) => r.round === lobby.currentRound)
+  if (!currentRule) throw new Error('Invalid quest round.')
+
   if (!lobby.upcomingLeader) {
     throw new Error('No leader is selected.')
   }
-  if (!lobby.amuletHolder) {
+  if (currentRule?.amulet && !lobby.amuletHolder) {
     throw new Error('No amulet holder is selected.')
   }
-  if (
-    lobby.veterans.includes(lobby.upcomingLeader) ||
-    lobby.veterans.includes(lobby.amuletHolder)
-  ) {
+  if (lobby.veterans.includes(lobby.upcomingLeader)) {
     throw new Error(`${lobby.upcomingLeader} is a veteran.`)
+  }
+  if (lobby.amuletHolder && lobby.veterans.includes(lobby.amuletHolder)) {
+    throw new Error(`${lobby.amuletHolder} is a veteran.`)
   }
   if (lobby.currentLeader === lobby.amuletHolder) {
     throw new Error('Leader and amulet holder cannot be the same player.')
@@ -79,7 +83,6 @@ export const confirmLeader = (lobby: Lobby) => {
 
   lobby.currentLeader = lobby.upcomingLeader
   lobby.upcomingLeader = null
-  lobby.currentRound++
 
   advancePhase(lobby)
 }

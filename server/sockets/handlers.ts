@@ -75,13 +75,16 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
 export const handleJoinGame = (
   ws: MyWebSocket,
   message: { lobbyId?: string; playerName?: string },
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId, playerName } = message
 
   if (!lobbyId || !playerName) {
     ws.send(
-      JSON.stringify({ event: 'ERROR', error: 'Missing lobbyId or playerName' })
+      JSON.stringify({
+        event: 'ERROR',
+        error: 'Missing lobbyId or playerName',
+      }),
     )
     return
   }
@@ -110,7 +113,7 @@ export const handleJoinGame = (
 
   // Handle player reconnect
   const reconnectingPlayerIndex = lobby.disconnectedPlayers.findIndex(
-    (player) => player.name === playerName
+    (player) => player.name === playerName,
   )
   if (reconnectingPlayerIndex !== -1) {
     // Remove the player from disconnectedPlayers only
@@ -170,7 +173,7 @@ export const handleJoinGame = (
       JSON.stringify({
         event: 'ERROR',
         error: 'A player with this name already exists in the lobby.',
-      })
+      }),
     )
     return
   }
@@ -192,7 +195,7 @@ export const handleJoinGame = (
 
 export const handleDisconnection = (
   ws: MyWebSocket,
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId, playerId } = ws
   if (!lobbyId || !playerId) return
@@ -216,7 +219,7 @@ export const handleDisconnection = (
       lobby.disconnectedPlayers.push(player)
     }
     console.log(
-      `Player ${player.name} disconnected during the game in lobby ${lobbyId}.`
+      `Player ${player.name} disconnected during the game in lobby ${lobbyId}.`,
     )
   }
 
@@ -229,7 +232,7 @@ export const handleDisconnection = (
 export const handleStartGame = (
   ws: MyWebSocket,
   message: { lobbyId?: string },
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId } = message
 
@@ -255,7 +258,7 @@ export const handleStartGame = (
       JSON.stringify({
         event: 'ERROR',
         error: 'Player count must be between 4 and 10 players.',
-      })
+      }),
     )
     return
   }
@@ -269,7 +272,7 @@ export const handleStartGame = (
         ? Math.random() < 0.5
           ? 'Troublemaker'
           : 'Youth'
-        : role
+        : role,
     )
 
     const shuffledRoles = R.shuffle(roles)
@@ -330,7 +333,7 @@ export const handleStartGame = (
 
     // Notify evils (except Blind Hunter) about each other
     const evils = lobby.players.filter(
-      (p) => p.role && knownEvilRoles.includes(p.role)
+      (p) => p.role && knownEvilRoles.includes(p.role),
     )
     if (evils.length > 0) {
       const evilNames = evils.map((e) => e.name)
@@ -360,7 +363,7 @@ export const handleUpdateTeam = (
     selectedPlayers: string[]
     magicTokenHolder: string | null
   },
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId, selectedPlayers, magicTokenHolder } = message
   const lobby = lobbies[lobbyId]
@@ -378,7 +381,7 @@ export const handleUpdateTeam = (
 export const handleConfirmTeam = (
   ws: MyWebSocket,
   message: { lobbyId: string },
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId } = message
   const lobby = lobbies[lobbyId]
@@ -396,7 +399,7 @@ export const handleConfirmTeam = (
 export const handleSubmitQuest = (
   ws: MyWebSocket,
   message: { lobbyId: string; playerId: string; isQuestCardPass: boolean },
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId, playerId, isQuestCardPass } = message
   const lobby = lobbies[lobbyId]
@@ -414,7 +417,7 @@ export const handleSubmitQuest = (
         JSON.stringify({
           event: 'ERROR',
           error: 'You are not on the quest team.',
-        })
+        }),
       )
       return
     }
@@ -429,20 +432,21 @@ export const handleSubmitQuest = (
 
     // Prevent duplicate submissions
     const alreadySubmitted = lobby.questSubmissions.some(
-      (submission) => submission.playerId === playerId
+      (submission) => submission.playerId === playerId,
     )
     if (alreadySubmitted) {
       ws.send(
-        JSON.stringify({ event: 'ERROR', error: 'Card already submitted.' })
+        JSON.stringify({ event: 'ERROR', error: 'Card already submitted.' }),
       )
       return
     }
 
     lobby.questSubmissions.push({ playerId, isQuestCardPass })
 
+    // When all submission are in:
     if (lobby.questSubmissions.length === lobby.currentTeam.length) {
       const numFails = lobby.questSubmissions.filter(
-        (submission) => !submission.isQuestCardPass
+        (submission) => !submission.isQuestCardPass,
       ).length
 
       const rules = getQuestRules(lobby.players.length)
@@ -453,7 +457,7 @@ export const handleSubmitQuest = (
           JSON.stringify({
             event: 'ERROR',
             error: 'Current quest rules not found.',
-          })
+          }),
         )
         return
       }
@@ -472,6 +476,7 @@ export const handleSubmitQuest = (
       lobby.questSubmissions = []
       lobby.currentTeam = []
       lobby.magicTokenHolder = null
+      lobby.currentRound++
 
       advancePhase(lobby)
       broadcastToLobby(wss, lobbyId, {
@@ -493,7 +498,7 @@ export const handleUpdateLeader = (
     lobbyId: string
     updatedLeader: string
   },
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId, updatedLeader } = message
   const lobby = lobbies[lobbyId]
@@ -514,7 +519,7 @@ export const handleUpdateAmulet = (
     lobbyId: string
     updatedAmulet: string
   },
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId, updatedAmulet } = message
   const lobby = lobbies[lobbyId]
@@ -532,7 +537,7 @@ export const handleUpdateAmulet = (
 export const handleConfirmLeader = (
   ws: MyWebSocket,
   message: { lobbyId: string },
-  wss: MyWebSocketServer
+  wss: MyWebSocketServer,
 ) => {
   const { lobbyId } = message
   const lobby = lobbies[lobbyId]
@@ -551,7 +556,7 @@ export const handleConfirmLeader = (
 export const broadcastToLobby = (
   wss: MyWebSocketServer,
   lobbyId: string,
-  data: object
+  data: object,
 ) => {
   const payload = JSON.stringify(data)
   wss.clients.forEach((client) => {
@@ -565,7 +570,7 @@ export const broadcastToLobby = (
 const sendPrivateMessage = (
   wss: MyWebSocketServer,
   clientId: string,
-  data: object
+  data: object,
 ) => {
   const payload = JSON.stringify(data)
   wss.clients.forEach((client) => {

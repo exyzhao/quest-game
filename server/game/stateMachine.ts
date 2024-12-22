@@ -44,8 +44,9 @@ export const advancePhase = (lobby: Lobby) => {
     case 'LEADER_SELECTION':
       if (lobby.amuletHolder) {
         lobby.phase = 'AMULET_CHECK'
+      } else {
+        lobby.phase = 'TEAM_SELECTION'
       }
-      lobby.phase = 'TEAM_SELECTION'
       break
 
     case 'AMULET_CHECK':
