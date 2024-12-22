@@ -216,18 +216,18 @@ export default function GamePage() {
     })
   }
 
-  // Set color of button if player is selected
-  const buttonColor = (playerId: string) => {
+  // Set color of ring if player is selected
+  const ringColor = (playerId: string) => {
     if (lobbyState.currentTeam.includes(playerId)) {
-      return 'blue-500'
+      return 'ring-4 ring-blue-500'
     }
     if (
       lobbyState.phase === 'LEADER_SELECTION' &&
       selectedLeader === playerId
     ) {
-      return 'blue-500'
+      return 'ring-4 ring-blue-500'
     } else {
-      return 'zinc-100'
+      return ''
     }
   }
 
@@ -294,7 +294,7 @@ export default function GamePage() {
               <img
                 src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
                 alt={`Avatar of ${player.name}`}
-                className={`h-16 w-16 rounded-full ring-4 ring-${buttonColor(player.id)}`}
+                className={`h-16 w-16 rounded-full ${ringColor(player.id)}`}
                 onClick={() => handlePlayerClick(player)}
               />
               {lobbyState.currentTeam.includes(player.id) && (
@@ -396,30 +396,30 @@ export default function GamePage() {
           {role}
         </span>
       </h2>
-      <div className="p-8">
+      {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
+        <p>Select {currentRule.requiredPlayers} players for the quest.</p>
+      )}
+      {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
+        <p>Waiting for {currentLeader.name} to select the team...</p>
+      )}
+      {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
+        <p>Select the next quest leader.</p>
+      )}
+      {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
+        <p>
+          Waiting for {currentLeader.name} to select the next quest leader...
+        </p>
+      )}
+      {lobbyState.phase === 'QUEST_RESOLUTION' && (
+        <p>Waiting for the team to resolve the quest...</p>
+      )}
+      {lobbyState.phase === 'THE_DISCUSSION' && (
+        <p>Begin a discussion phase for 5 minutes.</p>
+      )}
+      <div className="mb-12 p-8">
         <PlayerList />
       </div>
       <div>
-        {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
-          <p>Select {currentRule.requiredPlayers} players for the quest.</p>
-        )}
-        {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
-          <p>Waiting for {currentLeader.name} to select the team...</p>
-        )}
-        {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
-          <p>Select the next quest leader.</p>
-        )}
-        {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
-          <p>
-            Waiting for {currentLeader.name} to select the next quest leader...
-          </p>
-        )}
-        {lobbyState.phase === 'QUEST_RESOLUTION' && (
-          <p>Waiting for the team to resolve the quest...</p>
-        )}
-        {lobbyState.phase === 'THE_DISCUSSION' && (
-          <p>Begin a discussion phase for 5 minutes.</p>
-        )}
         {/* TODO: more descriptive text */}
         {lobbyState.players.map((player) => (
           <div key={player.id}>
@@ -433,9 +433,6 @@ export default function GamePage() {
                   toggleLeaderSelection(player.id)
                 }
               }} // Only the leader can interact
-              style={{
-                backgroundColor: buttonColor(player.id),
-              }}
               disabled={
                 !isLeader ||
                 lobbyState.phase === 'QUEST_RESOLUTION' ||
