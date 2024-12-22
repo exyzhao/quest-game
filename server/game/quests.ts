@@ -56,6 +56,10 @@ export const updateLeader = (lobby: Lobby, updatedLeader: string) => {
   lobby.upcomingLeader = updatedLeader
 }
 
+export const updateAmulet = (lobby: Lobby, updatedAmulet: string) => {
+  lobby.amuletHolder = updatedAmulet
+}
+
 export const confirmLeader = (lobby: Lobby) => {
   if (!lobby.upcomingLeader) {
     throw new Error('No leader is selected.')

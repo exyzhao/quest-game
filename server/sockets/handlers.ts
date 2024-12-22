@@ -7,6 +7,7 @@ import {
   updateTeam,
   confirmTeam,
   updateLeader,
+  updateAmulet,
   confirmLeader,
 } from '../game/quests'
 import { getQuestRules } from '../game/ruleset'
@@ -28,6 +29,10 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
       { id: 'player-4', name: 'r', role: 'Cleric' },
       { id: 'player-5', name: 't', role: 'Youth' },
       { id: 'player-6', name: 'y', role: 'Troublemaker' },
+      // { id: 'player-7', name: 'minion1', role: 'Minion of Mordred' },
+      // { id: 'player-8', name: 'minion2', role: 'Minion of Mordred' },
+      // { id: 'player-9', name: 'minion3', role: 'Minion of Mordred' },
+      // { id: 'player-10', name: 'minion4', role: 'Minion of Mordred' },
     ],
     disconnectedPlayers: [
       { id: 'player-1', name: 'q', role: 'Morgan le Fey' },
@@ -36,6 +41,8 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
       { id: 'player-4', name: 'r', role: 'Cleric' },
       { id: 'player-5', name: 't', role: 'Youth' },
       { id: 'player-6', name: 'y', role: 'Troublemaker' },
+      // { id: 'player-7', name: 'minion1', role: 'Minion of Mordred' },
+      // { id: 'player-8', name: 'minion2', role: 'Minion of Mordred' },
     ],
     veterans: [],
     questHistory: [],
@@ -492,6 +499,27 @@ export const handleUpdateLeader = (
   const lobby = lobbies[lobbyId]
   try {
     updateLeader(lobby, updatedLeader)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const handleUpdateAmulet = (
+  ws: MyWebSocket,
+  message: {
+    lobbyId: string
+    updatedAmulet: string
+  },
+  wss: MyWebSocketServer
+) => {
+  const { lobbyId, updatedAmulet } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    updateAmulet(lobby, updatedAmulet)
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,
       state: lobby,

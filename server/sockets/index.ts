@@ -15,6 +15,7 @@ import {
   handleConfirmTeam,
   handleSubmitQuest,
   handleUpdateLeader,
+  handleUpdateAmulet,
   handleConfirmLeader,
 } from './handlers'
 import { IncomingMessage } from 'http'
@@ -63,6 +64,9 @@ export const initWebSockets = (server: import('http').Server) => {
           break
         case 'UPDATE_LEADER':
           handleUpdateLeader(ws, data, wss)
+          break
+        case 'UPDATE_AMULET':
+          handleUpdateAmulet(ws, data, wss)
           break
         case 'CONFIRM_LEADER':
           handleConfirmLeader(ws, data, wss)
