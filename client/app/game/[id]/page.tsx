@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useRef, useEffect, useState, RefObject } from 'react'
 import { useWebSocketContext } from '@/context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
 import { usePlayerContext } from '@/context/PlayerContext'
@@ -66,6 +66,86 @@ export default function GamePage() {
     'Minion of Mordred',
     'Blind Hunter',
   ].includes(player.role ?? '')
+
+  // Used to size the player table
+  function useContainerSize(ref: RefObject<HTMLDivElement | null>) {
+    const [size, setSize] = useState(0)
+
+    useEffect(() => {
+      function handleResize() {
+        if (ref.current) {
+          setSize(ref.current.clientWidth)
+        }
+      }
+      window.addEventListener('resize', handleResize)
+      handleResize() // measure at first render
+      return () => window.removeEventListener('resize', handleResize)
+    }, [ref])
+
+    return size
+  }
+
+  const PlayerList = () => {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const diameter = useContainerSize(containerRef)
+    const radius = diameter / 2
+
+    const totalPlayers = lobbyState.players.length
+
+    return (
+      <div
+        ref={containerRef}
+        className="relative mx-auto aspect-square w-full max-w-md"
+      >
+        {lobbyState.players.map((player, index) => {
+          // Spread out the angles evenly around the circle
+          const angle = (360 / totalPlayers) * index - 90
+          const rad = (angle * Math.PI) / 180
+
+          // Find x,y around the circle
+          const x = radius + radius * Math.cos(rad)
+          const y = radius + radius * Math.sin(rad)
+
+          return (
+            <div
+              key={player.name}
+              className="absolute flex w-16 flex-col items-center text-center gap-2"
+              style={{
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              <p>{player.name}</p>
+              <img
+                src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
+                alt={`Avatar of ${player.name}`}
+                className="h-16 w-16 rounded-full ring-4 ring-gray-300 ring-offset-2 ring-offset-white cursor-not-allowed opacity-50"
+              />
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // const PlayerList = () => {
+  //   return (
+  //     <div className="flex flex-wrap gap-4">
+  //       {lobbyState.players.map((player) => (
+  //         <div key={player.name} className="flex flex-col items-center">
+  //           {/* Avatar generated from DiceBear API */}
+  //           <p className="mt-2 text-center">{player.name}</p>
+  //           <img
+  //             src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
+  //             alt={`Avatar of ${player.name}`}
+  //             className="h-16 w-16 rounded-full"
+  //           />
+  //         </div>
+  //       ))}
+  //     </div>
+  //   )
+  // }
 
   const QuestRoadmap = () => (
     <div className="mx-auto flex max-w-md justify-around gap-2">
@@ -284,6 +364,9 @@ export default function GamePage() {
           {role}
         </span>
       </h2>
+      <div className="p-8">
+        <PlayerList />
+      </div>
       <div>
         {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
           <p>Select {currentRule.requiredPlayers} players for the quest.</p>
