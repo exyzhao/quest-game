@@ -173,7 +173,7 @@ export default function GamePage() {
 
   // Toggle token selection
   const assignToken = (playerId: string) => {
-    if (!isLeader) return // Only the leader can assign the token
+    if (!isLeader) return
 
     setTokenHolder((prevTokenHolder) => {
       const updatedToken = prevTokenHolder === playerId ? null : playerId
@@ -201,6 +201,20 @@ export default function GamePage() {
       })
       return updatedLeader
     })
+  }
+
+  // Toggle token selection
+  const assignAmulet = (playerId: string) => {
+    if (!isLeader) return
+
+    const updatedAmulet = lobbyState.amuletHolder === playerId ? null : playerId
+
+    sendMessage({
+      event: 'UPDATE_AMULET',
+      lobbyId,
+      updatedAmulet,
+    })
+    return updatedAmulet
   }
 
   const confirmTeam = () => {
@@ -282,6 +296,8 @@ export default function GamePage() {
     const radius = diameter / 2
     const totalPlayers = lobbyState.players.length
 
+    console.log(radius)
+
     return (
       <div
         ref={containerRef}
@@ -292,28 +308,36 @@ export default function GamePage() {
           const rad = (angle * Math.PI) / 180
           const x = radius + radius * Math.cos(rad)
           let y = radius + radius * Math.sin(rad)
-          // if (radius <= 190) {
-          //   y *= 1.5
-          // }
+          if (radius <= 150 && totalPlayers >= 8) {
+            if (totalPlayers === 8) {
+              y *= 1.1
+            }
+            if (totalPlayers === 9) {
+              y *= 1.2
+            }
+            if (totalPlayers === 10) {
+              y *= 1.3
+            }
+          }
 
           return (
             <div
               key={player.name}
-              className="absolute flex w-16 flex-col items-center gap-2 text-center"
+              className="absolute flex w-16 flex-col items-center gap-1 text-center"
               style={{
                 left: `${x}px`,
                 top: `${y}px`,
                 transform: 'translate(-50%, -50%)',
-                opacity: `${isPlayerClickable(player) ? '1' : '0.6'}`,
+                opacity: `${isPlayerClickable(player) ? '1' : '0.4'}`,
                 cursor: `${isPlayerClickable(player) ? '' : 'not-allowed'}`,
               }}
             >
-              <p>
+              <p className="min-w-36">
                 {player.name}
                 {player.id === id ? ' (You)' : ''}
               </p>
               <img
-                src={`https://api.dicebear.com/9.x/dylan/svg?seed=${player.name}&svg?backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`}
+                src={`https://api.dicebear.com/9.x/dylan/svg?seed=${player.name}&scale=80&backgroundColor=29e051,619eff,ffa6e6,7074ff,58bffd,967aff,6b80ff,39e8c8,fe9cfa,ffb5cf,ffb0d5,63cb24,3cd623,2ce169,ffabdd,fea1ef,51d023,ffbfc7`}
                 alt={`Avatar of ${player.name}`}
                 className={`h-16 w-16 rounded-full ${ringColor(player.id)}`}
                 onClick={() => handlePlayerClick(player)}
@@ -325,7 +349,7 @@ export default function GamePage() {
                     lobbyState.phase === 'TEAM_SELECTION' &&
                     assignToken(player.id)
                   } // Only leader can interact
-                  className="absolute top-28 w-20 text-sm"
+                  className="absolute top-[88px] w-20 text-sm"
                   style={{
                     backgroundColor:
                       lobbyState.magicTokenHolder === player.id
@@ -339,6 +363,20 @@ export default function GamePage() {
                     : 'Use Token'}
                 </button>
               )}
+              {lobbyState.phase === 'LEADER_SELECTION' &&
+                !lobbyState.veterans.includes(player.id) && (
+                  <button
+                    onClick={() => isLeader && assignAmulet(player.id)}
+                    className={`absolute top-[88px] w-[90px] text-sm ${lobbyState.amuletHolder === player.id ? 'bg-purple-300' : 'bg-white'}`}
+                    disabled={
+                      !isLeader || lobbyState.phase !== 'LEADER_SELECTION'
+                    }
+                  >
+                    {lobbyState.amuletHolder === player.id
+                      ? 'Amulet Given'
+                      : 'Give Amulet'}
+                  </button>
+                )}
             </div>
           )
         })}
@@ -418,13 +456,16 @@ export default function GamePage() {
         </span>
       </h2>
       {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
-        <p>Select {currentRule.requiredPlayers} players for the quest.</p>
+        <p>
+          Select <strong>{currentRule.requiredPlayers}</strong> players for the
+          quest.
+        </p>
       )}
       {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
         <p>Waiting for {currentLeader.name} to select the team...</p>
       )}
       {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
-        <p>Select the next quest leader.</p>
+        <p>Select the next quest leader (and amulet holder).</p>
       )}
       {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
         <p>

@@ -12,7 +12,7 @@ export const metadata = {
 
 const crimsonText = Crimson_Text({
   subsets: ['latin'],
-  weight: ['400'],
+  weight: ['400', '700'],
   variable: '--font-crimson-text',
 })
 
