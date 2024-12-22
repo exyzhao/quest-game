@@ -85,68 +85,6 @@ export default function GamePage() {
     return size
   }
 
-  const PlayerList = () => {
-    const containerRef = useRef<HTMLDivElement>(null)
-    const diameter = useContainerSize(containerRef)
-    const radius = diameter / 2
-
-    const totalPlayers = lobbyState.players.length
-
-    return (
-      <div
-        ref={containerRef}
-        className="relative mx-auto aspect-square w-full max-w-md"
-      >
-        {lobbyState.players.map((player, index) => {
-          // Spread out the angles evenly around the circle
-          const angle = (360 / totalPlayers) * index - 90
-          const rad = (angle * Math.PI) / 180
-
-          // Find x,y around the circle
-          const x = radius + radius * Math.cos(rad)
-          const y = radius + radius * Math.sin(rad)
-
-          return (
-            <div
-              key={player.name}
-              className="absolute flex w-16 flex-col items-center text-center gap-2"
-              style={{
-                left: `${x}px`,
-                top: `${y}px`,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              <p>{player.name}</p>
-              <img
-                src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
-                alt={`Avatar of ${player.name}`}
-                className="h-16 w-16 rounded-full ring-4 ring-gray-300 ring-offset-2 ring-offset-white cursor-not-allowed opacity-50"
-              />
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
-
-  // const PlayerList = () => {
-  //   return (
-  //     <div className="flex flex-wrap gap-4">
-  //       {lobbyState.players.map((player) => (
-  //         <div key={player.name} className="flex flex-col items-center">
-  //           {/* Avatar generated from DiceBear API */}
-  //           <p className="mt-2 text-center">{player.name}</p>
-  //           <img
-  //             src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
-  //             alt={`Avatar of ${player.name}`}
-  //             className="h-16 w-16 rounded-full"
-  //           />
-  //         </div>
-  //       ))}
-  //     </div>
-  //   )
-  // }
-
   const QuestRoadmap = () => (
     <div className="mx-auto flex max-w-md justify-around gap-2">
       {lobbyState.rules?.map((rule: QuestRules) => {
@@ -278,6 +216,86 @@ export default function GamePage() {
     })
   }
 
+  // Set color of button if player is selected
+  const buttonColor = (playerId: string) => {
+    if (lobbyState.currentTeam.includes(playerId)) {
+      return 'blue-500'
+    }
+    if (
+      lobbyState.phase === 'LEADER_SELECTION' &&
+      selectedLeader === playerId
+    ) {
+      return 'blue-500'
+    } else {
+      return 'gray-300'
+    }
+  }
+
+  const PlayerList = () => {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const diameter = useContainerSize(containerRef)
+    const radius = diameter / 2
+
+    const totalPlayers = lobbyState.players.length
+
+    return (
+      <div
+        ref={containerRef}
+        className="relative mx-auto aspect-square w-full max-w-md"
+      >
+        {lobbyState.players.map((player, index) => {
+          // Spread out the angles evenly around the circle
+          const angle = (360 / totalPlayers) * index - 90
+          const rad = (angle * Math.PI) / 180
+
+          // Find x,y around the circle
+          const x = radius + radius * Math.cos(rad)
+          const y = radius + radius * Math.sin(rad)
+
+          return (
+            <div
+              key={player.name}
+              className="absolute flex w-16 flex-col items-center gap-2 text-center"
+              style={{
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              <p>{player.name}</p>
+              <div
+                className={`rounded-full ring-4 ring-${buttonColor(player.id)} cursor-not-allowed ring-offset-4 ring-offset-zinc-100`}
+                onClick={() => {
+                  // Disable clicking when
+                  if (
+                    lobbyState.phase === 'QUEST_RESOLUTION' ||
+                    (lobbyState.phase === 'LEADER_SELECTION' &&
+                      lobbyState.veterans.includes(player.id)) ||
+                    lobbyState.phase === 'THE_DISCUSSION'
+                  )
+                    return
+                  if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
+                    // Only leader can interact
+                    togglePlayerSelection(player.id)
+                  }
+                  if (isLeader && lobbyState.phase === 'LEADER_SELECTION') {
+                    toggleLeaderSelection(player.id)
+                  }
+                }}
+              >
+                <img
+                  src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
+                  alt={`Avatar of ${player.name}`}
+                  className="h-16 w-16 rounded-full opacity-40"
+                />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   // Component for playing questing cards
   const QuestResolution = () => {
     if (lobbyState.phase !== 'QUEST_RESOLUTION') return null
@@ -334,21 +352,6 @@ export default function GamePage() {
         </div>
       </div>
     )
-  }
-
-  // Set color of button if player is selected
-  const buttonColor = (playerId: string) => {
-    if (lobbyState.currentTeam.includes(playerId)) {
-      return 'lightblue'
-    }
-    if (
-      lobbyState.phase === 'LEADER_SELECTION' &&
-      selectedLeader === playerId
-    ) {
-      return 'lightblue'
-    } else {
-      return ''
-    }
   }
 
   // For debugging
