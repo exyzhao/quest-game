@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState, RefObject } from 'react'
+import { useRef, useEffect, useLayoutEffect, useState, RefObject } from 'react'
 import { useWebSocketContext } from '@/context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
 import { usePlayerContext } from '@/context/PlayerContext'
@@ -71,7 +71,7 @@ export default function GamePage() {
   function useContainerSize(ref: RefObject<HTMLDivElement | null>) {
     const [size, setSize] = useState(0)
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       function handleResize() {
         if (ref.current) {
           setSize(ref.current.clientWidth)
@@ -219,13 +219,13 @@ export default function GamePage() {
   // Set color of ring if player is selected
   const ringColor = (playerId: string) => {
     if (lobbyState.currentTeam.includes(playerId)) {
-      return 'ring-4 ring-blue-500'
+      return 'ring-[6px] ring-gray-500'
     }
     if (
       lobbyState.phase === 'LEADER_SELECTION' &&
       selectedLeader === playerId
     ) {
-      return 'ring-4 ring-blue-500'
+      return 'ring-[6px] ring-gray-500'
     } else {
       return ''
     }
@@ -264,7 +264,6 @@ export default function GamePage() {
     const containerRef = useRef<HTMLDivElement>(null)
     const diameter = useContainerSize(containerRef)
     const radius = diameter / 2
-
     const totalPlayers = lobbyState.players.length
 
     return (
@@ -276,7 +275,10 @@ export default function GamePage() {
           const angle = (360 / totalPlayers) * index - 90
           const rad = (angle * Math.PI) / 180
           const x = radius + radius * Math.cos(rad)
-          const y = radius + radius * Math.sin(rad)
+          let y = radius + radius * Math.sin(rad)
+          // if (radius <= 190) {
+          //   y *= 1.5 
+          // }
 
           return (
             <div
@@ -292,7 +294,7 @@ export default function GamePage() {
             >
               <p>{player.name}</p>
               <img
-                src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
+                src={`https://api.dicebear.com/9.x/dylan/svg?seed=${player.name}&svg?backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`}
                 alt={`Avatar of ${player.name}`}
                 className={`h-16 w-16 rounded-full ${ringColor(player.id)}`}
                 onClick={() => handlePlayerClick(player)}
@@ -420,60 +422,15 @@ export default function GamePage() {
         <PlayerList />
       </div>
       <div>
-        {/* TODO: more descriptive text */}
-        {lobbyState.players.map((player) => (
-          <div key={player.id}>
-            {/* Player Selection Button */}
-            <button
-              onClick={() => {
-                if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
-                  togglePlayerSelection(player.id)
-                }
-                if (isLeader && lobbyState.phase === 'LEADER_SELECTION') {
-                  toggleLeaderSelection(player.id)
-                }
-              }} // Only the leader can interact
-              disabled={
-                !isLeader ||
-                lobbyState.phase === 'QUEST_RESOLUTION' ||
-                (lobbyState.phase === 'LEADER_SELECTION' &&
-                  lobbyState.veterans.includes(player.id)) ||
-                lobbyState.phase === 'THE_DISCUSSION'
-              } // Disable for non-leaders
-              className="w-40 text-center"
-            >
-              {player.name} {player.id === id ? '(You)' : ''}
-            </button>
-
-            {/* Token Assignment Button */}
-            {lobbyState.currentTeam.includes(player.id) && (
-              <button
-                onClick={() =>
-                  isLeader &&
-                  lobbyState.phase === 'TEAM_SELECTION' &&
-                  assignToken(player.id)
-                } // Only leader can interact
-                style={{
-                  marginLeft: '10px',
-                  backgroundColor:
-                    lobbyState.magicTokenHolder === player.id
-                      ? 'gold'
-                      : 'white',
-                }}
-                disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'} // Disable for non-leaders
-              >
-                {lobbyState.magicTokenHolder === player.id
-                  ? 'Token Assigned'
-                  : 'Assign Token'}
-              </button>
-            )}
-          </div>
-        ))}
         {isLeader && lobbyState.phase === 'TEAM_SELECTION' ? (
-          <button onClick={confirmTeam}>Confirm Team</button>
+          <button className="bg-green-300" onClick={confirmTeam}>
+            Confirm Team
+          </button>
         ) : null}
         {isLeader && lobbyState.phase === 'LEADER_SELECTION' ? (
-          <button onClick={confirmLeader}>Confirm Leader</button>
+          <button className="bg-green-300" onClick={confirmLeader}>
+            Confirm Leader
+          </button>
         ) : null}
       </div>
 
