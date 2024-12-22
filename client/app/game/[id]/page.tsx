@@ -227,8 +227,37 @@ export default function GamePage() {
     ) {
       return 'blue-500'
     } else {
-      return 'gray-300'
+      return 'zinc-100'
     }
+  }
+
+  // Mirrors isPlayerClickable
+  const handlePlayerClick = (player: Player) => {
+    if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
+      togglePlayerSelection(player.id)
+    }
+    if (
+      isLeader &&
+      lobbyState.phase === 'LEADER_SELECTION' &&
+      !lobbyState.veterans.includes(player.id)
+    ) {
+      toggleLeaderSelection(player.id)
+    }
+  }
+
+  // Mirrors handlePlayerClick
+  const isPlayerClickable = (player: Player) => {
+    if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
+      return true
+    }
+    if (
+      isLeader &&
+      lobbyState.phase === 'LEADER_SELECTION' &&
+      !lobbyState.veterans.includes(player.id)
+    ) {
+      return true
+    }
+    return false
   }
 
   const PlayerList = () => {
@@ -244,11 +273,8 @@ export default function GamePage() {
         className="relative mx-auto aspect-square w-full max-w-md"
       >
         {lobbyState.players.map((player, index) => {
-          // Spread out the angles evenly around the circle
           const angle = (360 / totalPlayers) * index - 90
           const rad = (angle * Math.PI) / 180
-
-          // Find x,y around the circle
           const x = radius + radius * Math.cos(rad)
           const y = radius + radius * Math.sin(rad)
 
@@ -260,35 +286,38 @@ export default function GamePage() {
                 left: `${x}px`,
                 top: `${y}px`,
                 transform: 'translate(-50%, -50%)',
+                opacity: `${isPlayerClickable(player) ? '1' : '0.6'}`,
+                cursor: `${isPlayerClickable(player) ? '' : 'not-allowed'}`,
               }}
             >
               <p>{player.name}</p>
-              <div
-                className={`rounded-full ring-4 ring-${buttonColor(player.id)} cursor-not-allowed ring-offset-4 ring-offset-zinc-100`}
-                onClick={() => {
-                  // Disable clicking when
-                  if (
-                    lobbyState.phase === 'QUEST_RESOLUTION' ||
-                    (lobbyState.phase === 'LEADER_SELECTION' &&
-                      lobbyState.veterans.includes(player.id)) ||
-                    lobbyState.phase === 'THE_DISCUSSION'
-                  )
-                    return
-                  if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
-                    // Only leader can interact
-                    togglePlayerSelection(player.id)
-                  }
-                  if (isLeader && lobbyState.phase === 'LEADER_SELECTION') {
-                    toggleLeaderSelection(player.id)
-                  }
-                }}
-              >
-                <img
-                  src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
-                  alt={`Avatar of ${player.name}`}
-                  className="h-16 w-16 rounded-full opacity-40"
-                />
-              </div>
+              <img
+                src={`https://api.dicebear.com/9.x/shapes/svg?seed=${player.name}&backgroundType=gradientLinear`}
+                alt={`Avatar of ${player.name}`}
+                className={`h-16 w-16 rounded-full ring-4 ring-${buttonColor(player.id)}`}
+                onClick={() => handlePlayerClick(player)}
+              />
+              {lobbyState.currentTeam.includes(player.id) && (
+                <button
+                  onClick={() =>
+                    isLeader &&
+                    lobbyState.phase === 'TEAM_SELECTION' &&
+                    assignToken(player.id)
+                  } // Only leader can interact
+                  className="absolute top-28 w-20 text-sm"
+                  style={{
+                    backgroundColor:
+                      lobbyState.magicTokenHolder === player.id
+                        ? 'gold'
+                        : 'white',
+                  }}
+                  disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'}
+                >
+                  {lobbyState.magicTokenHolder === player.id
+                    ? 'Token Used'
+                    : 'Use Token'}
+                </button>
+              )}
             </div>
           )
         })}
