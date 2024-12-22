@@ -12,7 +12,7 @@ import { advancePhase } from './stateMachine'
 export const updateTeam = (
   lobby: Lobby,
   selectedPlayerIds: string[],
-  magicTokenHolder: string | null
+  magicTokenHolder: string | null,
 ) => {
   // TODO: pull rules from lobby
   const rules = getQuestRules(lobby.players.length)
@@ -21,7 +21,7 @@ export const updateTeam = (
 
   if (selectedPlayerIds.length > currentQuest.requiredPlayers) {
     throw new Error(
-      `Invalid team size. Maximum: ${currentQuest.requiredPlayers}`
+      `Invalid team size. Maximum: ${currentQuest.requiredPlayers}`,
     )
   }
 
@@ -42,7 +42,7 @@ export const confirmTeam = (lobby: Lobby) => {
 
   if (lobby.currentTeam.length !== currentQuest.requiredPlayers) {
     throw new Error(
-      `Invalid team size. Required: ${currentQuest.requiredPlayers}`
+      `Invalid team size. Required: ${currentQuest.requiredPlayers}`,
     )
   }
   if (!lobby.magicTokenHolder) {
@@ -64,8 +64,17 @@ export const confirmLeader = (lobby: Lobby) => {
   if (!lobby.upcomingLeader) {
     throw new Error('No leader is selected.')
   }
-  if (lobby.veterans.includes(lobby.upcomingLeader)) {
+  if (!lobby.amuletHolder) {
+    throw new Error('No amulet holder is selected.')
+  }
+  if (
+    lobby.veterans.includes(lobby.upcomingLeader) ||
+    lobby.veterans.includes(lobby.amuletHolder)
+  ) {
     throw new Error(`${lobby.upcomingLeader} is a veteran.`)
+  }
+  if (lobby.currentLeader === lobby.amuletHolder) {
+    throw new Error('Leader and amulet holder cannot be the same player.')
   }
 
   lobby.currentLeader = lobby.upcomingLeader

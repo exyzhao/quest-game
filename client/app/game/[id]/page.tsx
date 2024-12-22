@@ -22,7 +22,6 @@ export default function GamePage() {
   const [passQuest, setPassQuest] = useState<boolean | null>(null)
   const [isQuestCardSubmitted, setIsQuestCardSubmited] =
     useState<boolean>(false)
-  const [selectedLeader, setSelectedLeader] = useState<string | null>(null)
 
   // Redirect if directly navigating
   useEffect(() => {
@@ -38,7 +37,6 @@ export default function GamePage() {
     setTokenHolder(null)
     setPassQuest(null)
     setIsQuestCardSubmited(false)
-    setSelectedLeader(null)
   }
 
   if (!lobbyState) {
@@ -127,7 +125,7 @@ export default function GamePage() {
             >
               <p>{rule.requiredPlayers}</p>
             </div>
-            {quest?.result === 'Failed' ? (
+            {quest && quest.fails > 0 ? (
               <div className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-zinc-100">
                 <p>{quest.fails}</p>
               </div>
@@ -188,22 +186,22 @@ export default function GamePage() {
     })
   }
 
+  // Toggle leader selection
   const toggleLeaderSelection = (playerId: string) => {
     if (!isLeader) return
 
-    setSelectedLeader((prevSelectedLeader) => {
-      const updatedLeader = prevSelectedLeader === playerId ? null : playerId
+    const updatedLeader =
+      lobbyState.upcomingLeader === playerId ? null : playerId
 
-      sendMessage({
-        event: 'UPDATE_LEADER',
-        lobbyId,
-        updatedLeader,
-      })
-      return updatedLeader
+    sendMessage({
+      event: 'UPDATE_LEADER',
+      lobbyId,
+      updatedLeader,
     })
+    return updatedLeader
   }
 
-  // Toggle token selection
+  // Toggle amulet selection
   const assignAmulet = (playerId: string) => {
     if (!isLeader) return
 
@@ -235,8 +233,16 @@ export default function GamePage() {
 
   // Confirm the leader
   const confirmLeader = () => {
-    if (!selectedLeader) {
+    if (!lobbyState.upcomingLeader) {
       alert('Please assign the next leader.')
+      return
+    }
+    if (!lobbyState.amuletHolder) {
+      alert('Please assign the next amulet holder.')
+      return
+    }
+    if (lobbyState.upcomingLeader === lobbyState.amuletHolder) {
+      alert('Next leader and amulet holder must be different players.')
       return
     }
 
@@ -253,7 +259,7 @@ export default function GamePage() {
     }
     if (
       lobbyState.phase === 'LEADER_SELECTION' &&
-      selectedLeader === playerId
+      lobbyState.upcomingLeader === playerId
     ) {
       return 'ring-[6px] ring-gray-500'
     } else {
@@ -364,6 +370,7 @@ export default function GamePage() {
                 </button>
               )}
               {lobbyState.phase === 'LEADER_SELECTION' &&
+                currentRule.amulet &&
                 !lobbyState.veterans.includes(player.id) && (
                   <button
                     onClick={() => isLeader && assignAmulet(player.id)}
@@ -465,7 +472,10 @@ export default function GamePage() {
         <p>Waiting for {currentLeader.name} to select the team...</p>
       )}
       {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
-        <p>Select the next quest leader (and amulet holder).</p>
+        <p>
+          Select the next quest leader
+          {currentRule.amulet ? ' and amulet holder' : ''}.
+        </p>
       )}
       {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
         <p>

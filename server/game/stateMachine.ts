@@ -5,7 +5,7 @@ export type GamePhase =
   | 'TEAM_SELECTION'
   | 'QUEST_RESOLUTION'
   | 'LEADER_SELECTION'
-  | 'AMULET_USAGE'
+  | 'AMULET_CHECK'
   | 'THE_DISCUSSION'
   | 'THE_HUNT'
   | 'GOODS_LAST_CHANCE'
@@ -42,6 +42,13 @@ export const advancePhase = (lobby: Lobby) => {
       break
 
     case 'LEADER_SELECTION':
+      if (lobby.amuletHolder) {
+        lobby.phase = 'AMULET_CHECK'
+      }
+      lobby.phase = 'TEAM_SELECTION'
+      break
+
+    case 'AMULET_CHECK':
       lobby.phase = 'TEAM_SELECTION'
       break
 
@@ -72,7 +79,7 @@ const isHuntSuccessful = (lobby: Lobby) => {
   }
   return lobby.hunted.every(
     (hunt) =>
-      hunt.role === lobby.players.find((p) => p.id === hunt.playerId)?.role
+      hunt.role === lobby.players.find((p) => p.id === hunt.playerId)?.role,
   )
 }
 
