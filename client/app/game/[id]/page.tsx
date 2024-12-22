@@ -1,5 +1,7 @@
 'use client'
 
+import * as R from 'remeda'
+
 import { useRef, useEffect, useLayoutEffect, useState, RefObject } from 'react'
 import { useWebSocketContext } from '@/context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
@@ -66,6 +68,20 @@ export default function GamePage() {
     'Minion of Mordred',
     'Blind Hunter',
   ].includes(player.role ?? '')
+
+  function rotatePlayers(players: Player[], id: string): Player[] {
+    const index = R.pipe(
+      players,
+      R.findIndex((player) => player.id === id),
+    )
+    if (index === -1) return players
+
+    return R.pipe(
+      players,
+      R.drop(index), // Get players from index to the end
+      (arr) => [...arr, ...R.pipe(players, R.take(index))], // Append the players from start to index
+    )
+  }
 
   // Used to size the player table
   function useContainerSize(ref: RefObject<HTMLDivElement | null>) {
@@ -271,13 +287,13 @@ export default function GamePage() {
         ref={containerRef}
         className="relative mx-auto aspect-square w-full max-w-md"
       >
-        {lobbyState.players.map((player, index) => {
+        {rotatePlayers(lobbyState.players, id).map((player, index) => {
           const angle = (360 / totalPlayers) * index - 90
           const rad = (angle * Math.PI) / 180
           const x = radius + radius * Math.cos(rad)
           let y = radius + radius * Math.sin(rad)
           // if (radius <= 190) {
-          //   y *= 1.5 
+          //   y *= 1.5
           // }
 
           return (
@@ -292,7 +308,10 @@ export default function GamePage() {
                 cursor: `${isPlayerClickable(player) ? '' : 'not-allowed'}`,
               }}
             >
-              <p>{player.name}</p>
+              <p>
+                {player.name}
+                {player.id === id ? ' (You)' : ''}
+              </p>
               <img
                 src={`https://api.dicebear.com/9.x/dylan/svg?seed=${player.name}&svg?backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`}
                 alt={`Avatar of ${player.name}`}
