@@ -55,7 +55,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     upcomingLeader: null,
     amuletHolder: null,
     isHunting: false,
-    knownEvils: ['q, w'],
+    knownEvils: ['player-1', 'player-2'],
     clericInfo: {
       leaderName: 'q',
       leaderAlignment: 'Evil',
@@ -149,7 +149,7 @@ export const handleJoinGame = (
         // Resend known evils info
         sendPrivateMessage(wss, reconnectingPlayer.id, {
           event: 'EVIL_INFO',
-          message: `The known evils are: ${lobby.knownEvils.join(', ')}.`,
+          message: lobby.knownEvils,
         })
       }
 
@@ -336,13 +336,13 @@ export const handleStartGame = (
       (p) => p.role && knownEvilRoles.includes(p.role),
     )
     if (evils.length > 0) {
-      const evilNames = evils.map((e) => e.name)
-      lobby.knownEvils = evilNames
+      const evilIds = evils.map((e) => e.id)
+      lobby.knownEvils = evilIds
 
       evils.forEach((evil) => {
         sendPrivateMessage(wss, evil.id, {
           event: 'EVIL_INFO',
-          message: `The known evils are: ${evilNames.join(', ')}.`,
+          message: evilIds,
         })
       })
     }

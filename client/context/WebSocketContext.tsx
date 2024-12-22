@@ -60,15 +60,15 @@ export const WebSocketProvider = ({
 
           case 'EVIL_INFO':
             if (parsed.message) {
-              const evilNames = parsed.message.split(': ')[1].split(', ')
-              setKnownEvils(evilNames)
+              const evilIds = parsed.message
+              setKnownEvils(evilIds)
             }
             break
 
           case 'CLERIC_INFO':
             if (parsed.message) {
               const match = /The first quest leader \((.+?)\) is (.+)\./.exec(
-                parsed.message
+                parsed.message,
               )
               if (match) {
                 const [_, leaderName, leaderAlignment] = match
@@ -123,7 +123,7 @@ export const useWebSocketContext = () => {
   const context = useContext(WebSocketContext)
   if (!context) {
     throw new Error(
-      'useWebSocketContext must be used within a WebSocketProvider'
+      'useWebSocketContext must be used within a WebSocketProvider',
     )
   }
   return context

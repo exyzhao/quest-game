@@ -24,7 +24,7 @@ export interface Lobby {
   players: Player[]
   disconnectedPlayers: Player[] // Track players who disconnected during the game
   clericInfo?: { leaderName: string; leaderAlignment: string }
-  knownEvils?: string[] // Player names
+  knownEvils?: string[] // Player ids
   veterans: string[] // Player ids
   rules?: QuestRules[]
   questHistory: QuestResult[]

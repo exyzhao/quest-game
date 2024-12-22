@@ -139,6 +139,30 @@ export default function GamePage() {
     </div>
   )
 
+  // Set color of another player's name for this user
+  const playerNameColor = (playerId: string) => {
+    const blue = 'text-blue-500'
+    const red = 'text-red-700'
+    if (!role) {
+      return 'gray-100'
+    }
+    if (playerId === id) {
+      if (
+        ['Morgan le Fey', 'Minion of Mordred', 'Blind Hunter'].includes(role)
+      ) {
+        return red
+      } else {
+        return blue
+      }
+    } else {
+      if (knownEvils && knownEvils.includes(player.id)) {
+        return red
+      } else {
+        return ''
+      }
+    }
+  }
+
   const togglePlayerSelection = (playerId: string) => {
     if (!isLeader) return // Only the leader can select players
 
@@ -252,21 +276,6 @@ export default function GamePage() {
     })
   }
 
-  // Set color of ring if player is selected
-  const ringColor = (playerId: string) => {
-    if (lobbyState.currentTeam.includes(playerId)) {
-      return 'ring-[6px] ring-gray-500'
-    }
-    if (
-      lobbyState.phase === 'LEADER_SELECTION' &&
-      lobbyState.upcomingLeader === playerId
-    ) {
-      return 'ring-[6px] ring-gray-500'
-    } else {
-      return ''
-    }
-  }
-
   // Mirrors isPlayerClickable
   const handlePlayerClick = (player: Player) => {
     if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
@@ -302,14 +311,27 @@ export default function GamePage() {
     const radius = diameter / 2
     const totalPlayers = lobbyState.players.length
 
-    console.log(radius)
-
     return (
       <div
         ref={containerRef}
         className="relative mx-auto aspect-square w-full max-w-md"
       >
         {rotatePlayers(lobbyState.players, id).map((player, index) => {
+          // Set color of ring if player is selected
+          const ringColor = (playerId: string) => {
+            if (lobbyState.currentTeam.includes(playerId)) {
+              return 'ring-[6px] ring-gray-500'
+            }
+            if (
+              lobbyState.phase === 'LEADER_SELECTION' &&
+              lobbyState.upcomingLeader === playerId
+            ) {
+              return 'ring-[6px] ring-gray-500'
+            } else {
+              return ''
+            }
+          }
+
           const angle = (360 / totalPlayers) * index - 90
           const rad = (angle * Math.PI) / 180
           const x = radius + radius * Math.cos(rad)
@@ -338,7 +360,7 @@ export default function GamePage() {
                 cursor: `${isPlayerClickable(player) ? '' : 'not-allowed'}`,
               }}
             >
-              <p className="min-w-36">
+              <p className={`min-w-36 ${playerNameColor(player.id)}`}>
                 {player.name}
                 {player.id === id ? ' (You)' : ''}
               </p>
@@ -458,7 +480,7 @@ export default function GamePage() {
       <QuestRoadmap />
       <h2>
         Your Role:{' '}
-        <span className={`${isGoodPlayer ? 'text-blue-800' : 'text-red-800'}`}>
+        <span className={`${isGoodPlayer ? 'text-blue-500' : 'text-red-700'}`}>
           {role}
         </span>
       </h2>
@@ -469,7 +491,13 @@ export default function GamePage() {
         </p>
       )}
       {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
-        <p>Waiting for {currentLeader.name} to select the team...</p>
+        <p>
+          Waiting for{' '}
+          <span className={playerNameColor(currentLeader.id)}>
+            {currentLeader.name}
+          </span>{' '}
+          to select the team...
+        </p>
       )}
       {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
         <p>
@@ -505,19 +533,6 @@ export default function GamePage() {
       </div>
 
       <QuestResolution />
-
-      {/* Show known evils to evil players */}
-      {['Morgan le Fey', 'Minion of Mordred'].includes(role || '') &&
-        knownEvils && (
-          <div>
-            <h3>Known Evils:</h3>
-            <ul>
-              {knownEvils.map((evil) => (
-                <li key={evil}>{evil}</li>
-              ))}
-            </ul>
-          </div>
-        )}
 
       {/* Show cleric info to the Cleric */}
       {role === 'Cleric' && clericInfo && (
