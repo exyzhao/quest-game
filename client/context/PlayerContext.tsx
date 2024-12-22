@@ -9,10 +9,8 @@ interface PlayerContextValue {
   setRole: (role: string | null) => void
   knownEvils: string[] | null
   setKnownEvils: (evils: string[] | null) => void
-  clericInfo: { leaderName: string; leaderAlignment: string } | null
-  setClericInfo: (
-    info: { leaderName: string; leaderAlignment: string } | null
-  ) => void
+  clericInfo: { firstLeader: string; isGood: boolean } | null
+  setClericInfo: (info: { firstLeader: string; isGood: boolean } | null) => void
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null)
@@ -22,8 +20,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<string | null>(null)
   const [knownEvils, setKnownEvils] = useState<string[] | null>(null)
   const [clericInfo, setClericInfo] = useState<{
-    leaderName: string
-    leaderAlignment: string
+    firstLeader: string
+    isGood: boolean
   } | null>(null)
 
   return (

@@ -60,20 +60,13 @@ export const WebSocketProvider = ({
 
           case 'EVIL_INFO':
             if (parsed.message) {
-              const evilIds = parsed.message
-              setKnownEvils(evilIds)
+              setKnownEvils(parsed.message)
             }
             break
 
           case 'CLERIC_INFO':
             if (parsed.message) {
-              const match = /The first quest leader \((.+?)\) is (.+)\./.exec(
-                parsed.message,
-              )
-              if (match) {
-                const [_, leaderName, leaderAlignment] = match
-                setClericInfo({ leaderName, leaderAlignment })
-              }
+              setClericInfo(parsed.message)
             }
             break
 

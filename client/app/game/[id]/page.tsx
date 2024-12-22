@@ -7,7 +7,7 @@ import { useWebSocketContext } from '@/context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
 import { usePlayerContext } from '@/context/PlayerContext'
 
-import { Lobby, Player } from '../../../../shared/types'
+import { Player } from '../../../../shared/types'
 import { QuestRules } from '../../../../server/game/ruleset'
 // import { evilRoles } from '@/shared/constants' TODO
 
@@ -155,7 +155,10 @@ export default function GamePage() {
         return blue
       }
     } else {
-      if (knownEvils && knownEvils.includes(player.id)) {
+      if (role === 'Cleric' && clericInfo?.firstLeader === playerId) {
+        return clericInfo.isGood ? blue : red
+      }
+      if (knownEvils && knownEvils.includes(playerId)) {
         return red
       } else {
         return ''
@@ -539,8 +542,20 @@ export default function GamePage() {
         <div>
           <h3>Cleric Info:</h3>
           <p>
-            The first quest leader, <strong>{clericInfo.leaderName}</strong>, is{' '}
-            <strong>{clericInfo.leaderAlignment}</strong>.
+            The first leader{' '}
+            <span className={playerNameColor(clericInfo.firstLeader)}>
+              {
+                R.find(
+                  lobbyState.players,
+                  (p) => p.id === clericInfo.firstLeader,
+                )?.name
+              }
+            </span>{' '}
+            is{' '}
+            <span className={playerNameColor(clericInfo.firstLeader)}>
+              {clericInfo.isGood ? 'good' : 'evil'}
+            </span>
+            .
           </p>
         </div>
       )}

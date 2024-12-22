@@ -23,7 +23,7 @@ export interface Lobby {
   phase: GamePhase
   players: Player[]
   disconnectedPlayers: Player[] // Track players who disconnected during the game
-  clericInfo?: { leaderName: string; leaderAlignment: string }
+  clericInfo?: { firstLeader: string; isGood: boolean }
   knownEvils?: string[] // Player ids
   veterans: string[] // Player ids
   rules?: QuestRules[]

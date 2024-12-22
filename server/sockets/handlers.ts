@@ -57,8 +57,8 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     isHunting: false,
     knownEvils: ['player-1', 'player-2'],
     clericInfo: {
-      leaderName: 'q',
-      leaderAlignment: 'Evil',
+      firstLeader: 'player-1',
+      isGood: false,
     },
   }
   const lobby = lobbies[lobbyId]
@@ -137,7 +137,7 @@ export const handleJoinGame = (
         // Resend Cleric info
         sendPrivateMessage(wss, reconnectingPlayer.id, {
           event: 'CLERIC_INFO',
-          message: `The first quest leader (${lobby.clericInfo.leaderName}) is ${lobby.clericInfo.leaderAlignment}.`,
+          message: lobby.clericInfo,
         })
       }
 
@@ -312,22 +312,22 @@ export const handleStartGame = (
     // Notify cleric about first leader allegiance
     const cleric = lobby.players.find((player) => player.role === 'Cleric')
     if (cleric && questLeader.role) {
-      const leaderAlignment =
-        questLeader.role.includes('Morgan le Fey') ||
-        questLeader.role.includes('Blind Hunter') ||
-        questLeader.role.includes('Minion of Mordred') ||
-        questLeader.role.includes('Troublemaker')
-          ? 'Evil'
-          : 'Good'
+      const isGood =
+        !questLeader.role.includes('Morgan le Fey') &&
+        !questLeader.role.includes('Blind Hunter') &&
+        !questLeader.role.includes('Minion of Mordred') &&
+        !questLeader.role.includes('Troublemaker')
 
-      lobby.clericInfo = {
-        leaderName: questLeader.name,
-        leaderAlignment: leaderAlignment,
+      const clericInfo = {
+        firstLeader: questLeader.id,
+        isGood,
       }
+
+      lobby.clericInfo = clericInfo
 
       sendPrivateMessage(wss, cleric.id, {
         event: 'CLERIC_INFO',
-        message: `The first quest leader (${questLeader.name}) is ${leaderAlignment}.`,
+        message: clericInfo,
       })
     }
 
