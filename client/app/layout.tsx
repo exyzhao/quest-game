@@ -4,6 +4,7 @@ import { WebSocketProvider } from '../context/WebSocketContext'
 import { PlayerProvider } from '@/context/PlayerContext'
 import GlobalErrorPopup from './components/GlobalErrorPopup'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 
 export const metadata = {
   title: 'Quest App',
@@ -29,6 +30,7 @@ export default function RootLayout({
             <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
               <Navbar />
               {children}
+              <Footer />
             </div>
             <GlobalErrorPopup />
           </WebSocketProvider>

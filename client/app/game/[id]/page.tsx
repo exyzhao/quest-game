@@ -22,6 +22,7 @@ export default function GamePage() {
   const [passQuest, setPassQuest] = useState<boolean | null>(null)
   const [isQuestCardSubmitted, setIsQuestCardSubmited] =
     useState<boolean>(false)
+  const [pointed, setPointed] = useState<string[]>([])
 
   // Redirect if directly navigating
   useEffect(() => {
@@ -39,6 +40,7 @@ export default function GamePage() {
     setIsQuestCardSubmited(false)
   }
 
+  // Game code
   if (!lobbyState) {
     return <p>Loading game...</p>
   }
@@ -47,16 +49,21 @@ export default function GamePage() {
     return <p>TODO ERROR1</p>
   }
 
-  const player = lobbyState.players.find((p: Player) => p.id === id)
-  const currentLeader = lobbyState.players.find(
-    (player: Player) => player.id === lobbyState.currentLeader,
-  )
+  if (!lobbyState.currentLeader) {
+    return <p>ERROR: No leader assigned.</p>
+  }
 
+  // Helpers
+  const getPlayerFromId = (playerId: string) => {
+    return R.find(lobbyState.players, (p) => p.id === playerId)
+  }
+  const me = getPlayerFromId(id)
+  const currentLeader = getPlayerFromId(lobbyState.currentLeader)
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound,
   )
 
-  if (!player || !currentLeader || !currentRule) {
+  if (!me || !currentLeader || !currentRule) {
     return <p>TODO ERROR2</p>
   }
   const isLeader = id === currentLeader?.id
@@ -65,7 +72,7 @@ export default function GamePage() {
     'Morgan le Fey',
     'Minion of Mordred',
     'Blind Hunter',
-  ].includes(player.role ?? '')
+  ].includes(me.role ?? '')
 
   function rotatePlayers(players: Player[], id: string): Player[] {
     const index = R.pipe(
@@ -261,6 +268,21 @@ export default function GamePage() {
     return updatedAmuletUsage
   }
 
+  const updateHunted = (playerId: string) => {
+    if (getPlayerFromId(id)?.role !== 'Blind Hunter') return
+
+    // TODO
+  }
+
+  const updatePointed = (playerId: string) => {
+    if (!pointed.includes(playerId) && pointed.length < 2) {
+      setPointed([...pointed, playerId])
+    }
+    if (pointed.includes(playerId)) {
+      setPointed(pointed.filter((p) => p !== playerId))
+    }
+  }
+
   const confirmTeam = () => {
     if (selectedPlayers.length !== currentRule.requiredPlayers) {
       alert(`Please select exactly ${currentRule.requiredPlayers} players.`)
@@ -333,6 +355,16 @@ export default function GamePage() {
     ) {
       updateAmuletUsage(player.id)
     }
+    if (
+      lobbyState.phase === 'THE_HUNT' &&
+      me.role === 'Blind Hunter' &&
+      player.id !== id
+    ) {
+      updateHunted(player.id)
+    }
+    if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
+      updatePointed(player.id)
+    }
   }
 
   // Mirrors handlePlayerClick
@@ -356,6 +388,16 @@ export default function GamePage() {
       ) &&
       id !== player.id
     ) {
+      return true
+    }
+    if (
+      lobbyState.phase === 'THE_HUNT' &&
+      me.role === 'Blind Hunter' &&
+      player.id !== id
+    ) {
+      return true
+    }
+    if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
       return true
     }
     return false
@@ -433,7 +475,11 @@ export default function GamePage() {
               <img
                 src={`https://api.dicebear.com/9.x/dylan/svg?seed=${player.name}&scale=80&backgroundColor=29e051,619eff,ffa6e6,7074ff,58bffd,967aff,6b80ff,39e8c8,fe9cfa,ffb5cf,ffb0d5,63cb24,3cd623,2ce169,ffabdd,fea1ef,51d023,ffbfc7`}
                 alt={`Avatar of ${player.name}`}
-                className={`h-16 w-16 rounded-full ${ringColor(player.id)}`}
+                className={`h-16 w-16 rounded-full ${ringColor(player.id)} cursor-pointer`}
+                style={{
+                  opacity: `${isPlayerClickable(player) ? '1' : '0.4'}`,
+                  cursor: `${isPlayerClickable(player) ? '' : 'not-allowed'}`,
+                }}
                 onClick={() => handlePlayerClick(player)}
               />
               {lobbyState.currentTeam.includes(player.id) && (
@@ -449,6 +495,8 @@ export default function GamePage() {
                       lobbyState.magicTokenHolder === player.id
                         ? 'gold'
                         : 'white',
+                    opacity: `${isPlayerClickable(player) ? '1' : '0.4'}`,
+                    cursor: `${isPlayerClickable(player) ? '' : 'not-allowed'}`,
                   }}
                   disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'}
                 >
@@ -492,10 +540,10 @@ export default function GamePage() {
     }
 
     const isYouthTokened =
-      player.role === 'Youth' && lobbyState.magicTokenHolder === id
+      me.role === 'Youth' && lobbyState.magicTokenHolder === id
 
     const isEvilTokened =
-      ['Minion of Mordred', 'Blind Hunter'].includes(player.role ?? '') &&
+      ['Minion of Mordred', 'Blind Hunter'].includes(me.role ?? '') &&
       lobbyState.magicTokenHolder === id
 
     const canFail = (!isGoodPlayer && !isEvilTokened) || isYouthTokened
@@ -626,12 +674,7 @@ export default function GamePage() {
           <p>
             The first leader{' '}
             <span className={playerNameColor(clericInfo.firstLeader)}>
-              {
-                R.find(
-                  lobbyState.players,
-                  (p) => p.id === clericInfo.firstLeader,
-                )?.name
-              }
+              {getPlayerFromId(clericInfo.firstLeader)?.name}
             </span>{' '}
             is{' '}
             <span className={playerNameColor(clericInfo.firstLeader)}>
@@ -647,12 +690,7 @@ export default function GamePage() {
           <h3>Amulet Info:</h3>
           <p>
             <span className={playerNameColor(amuletInfo.amuletUsedOn)}>
-              {
-                R.find(
-                  lobbyState.players,
-                  (p) => p.id === amuletInfo.amuletUsedOn,
-                )?.name
-              }
+              {getPlayerFromId(amuletInfo.amuletUsedOn)?.name}
             </span>{' '}
             is{' '}
             <span className={playerNameColor(amuletInfo.amuletUsedOn)}>
