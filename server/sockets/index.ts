@@ -15,8 +15,10 @@ import {
   handleConfirmTeam,
   handleSubmitQuest,
   handleUpdateLeader,
-  handleUpdateAmulet,
+  handleUpdateAmuletHolder,
+  handleUpdateAmuletUsage,
   handleConfirmLeader,
+  handleConfirmAmuletUsage,
 } from './handlers'
 import { IncomingMessage } from 'http'
 
@@ -65,11 +67,17 @@ export const initWebSockets = (server: import('http').Server) => {
         case 'UPDATE_LEADER':
           handleUpdateLeader(ws, data, wss)
           break
-        case 'UPDATE_AMULET':
-          handleUpdateAmulet(ws, data, wss)
+        case 'UPDATE_AMULET_HOLDER':
+          handleUpdateAmuletHolder(ws, data, wss)
+          break
+        case 'UPDATE_AMULET_USAGE':
+          handleUpdateAmuletUsage(ws, data, wss)
           break
         case 'CONFIRM_LEADER':
           handleConfirmLeader(ws, data, wss)
+          break
+        case 'CONFIRM_AMULET_USAGE':
+          handleConfirmAmuletUsage(ws, data, wss)
           break
         default:
           ws.send(JSON.stringify({ error: 'Unknown event: ' + data.event }))

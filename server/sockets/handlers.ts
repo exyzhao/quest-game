@@ -7,8 +7,10 @@ import {
   updateTeam,
   confirmTeam,
   updateLeader,
-  updateAmulet,
+  updateAmuletHolder,
+  updateAmuletUsage,
   confirmLeader,
+  confirmAmuletUsage,
 } from '../game/quests'
 import { getQuestRules } from '../game/ruleset'
 // import { knownEvilRoles } from '../../shared/constants' TODO
@@ -45,6 +47,8 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
       // { id: 'player-8', name: 'minion2', role: 'Minion of Mordred' },
     ],
     veterans: [],
+    amulets: [],
+    fadedAmulets: [],
     questHistory: [],
     currentRound: 1,
     currentTeam: [],
@@ -54,6 +58,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     currentLeader: 'player-1',
     upcomingLeader: null,
     amuletHolder: null,
+    amuletUsedOn: null,
     isHunting: false,
     knownEvils: ['player-1', 'player-2'],
     clericInfo: {
@@ -97,10 +102,13 @@ export const handleJoinGame = (
       players: [],
       disconnectedPlayers: [],
       veterans: [],
+      amulets: [],
+      fadedAmulets: [],
       questHistory: [],
       currentLeader: null,
       upcomingLeader: null,
       amuletHolder: null,
+      amuletUsedOn: null,
       currentRound: 0,
       currentTeam: [],
       magicTokenHolder: null,
@@ -396,6 +404,24 @@ export const handleConfirmTeam = (
   }
 }
 
+export const handleConfirmAmuletUsage = (
+  ws: MyWebSocket,
+  message: { lobbyId: string },
+  wss: MyWebSocketServer,
+) => {
+  const { lobbyId } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    confirmAmuletUsage(lobby)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
 export const handleSubmitQuest = (
   ws: MyWebSocket,
   message: { lobbyId: string; playerId: string; isQuestCardPass: boolean },
@@ -513,18 +539,39 @@ export const handleUpdateLeader = (
   }
 }
 
-export const handleUpdateAmulet = (
+export const handleUpdateAmuletHolder = (
   ws: MyWebSocket,
   message: {
     lobbyId: string
-    updatedAmulet: string
+    updatedAmuletHolder: string
   },
   wss: MyWebSocketServer,
 ) => {
-  const { lobbyId, updatedAmulet } = message
+  const { lobbyId, updatedAmuletHolder } = message
   const lobby = lobbies[lobbyId]
   try {
-    updateAmulet(lobby, updatedAmulet)
+    updateAmuletHolder(lobby, updatedAmuletHolder)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const handleUpdateAmuletUsage = (
+  ws: MyWebSocket,
+  message: {
+    lobbyId: string
+    updatedAmuletUsage: string
+  },
+  wss: MyWebSocketServer,
+) => {
+  const { lobbyId, updatedAmuletUsage } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    updateAmuletUsage(lobby, updatedAmuletUsage)
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,
       state: lobby,

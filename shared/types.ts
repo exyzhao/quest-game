@@ -26,11 +26,15 @@ export interface Lobby {
   clericInfo?: { firstLeader: string; isGood: boolean }
   knownEvils?: string[] // Player ids
   veterans: string[] // Player ids
+  // TODO: amulet history
+  amulets: string[]
+  fadedAmulets: string[]
   rules?: QuestRules[]
   questHistory: QuestResult[]
   currentLeader: string | null
   upcomingLeader: string | null
   amuletHolder: string | null
+  amuletUsedOn: string | null
   currentRound: number
   currentTeam: string[]
   magicTokenHolder: string | null
