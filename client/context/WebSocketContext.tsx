@@ -29,7 +29,8 @@ export const WebSocketProvider = ({
   const [isConnected, setIsConnected] = useState(false)
   const [lobbyState, setLobbyState] = useState<Lobby | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const { setId, setRole, setClericInfo, setKnownEvils } = usePlayerContext()
+  const { setId, setRole, setClericInfo, setKnownEvils, setAmuletInfo } =
+    usePlayerContext()
 
   useEffect(() => {
     ws.current = new WebSocket('ws://localhost:4000')
@@ -70,6 +71,12 @@ export const WebSocketProvider = ({
             }
             break
 
+          case 'AMULET_INFO':
+            if (parsed.message) {
+              setAmuletInfo(parsed.message)
+            }
+            break
+
           case 'CARD_RECEIVED':
             // Can be used for debugging
             break
@@ -90,7 +97,7 @@ export const WebSocketProvider = ({
     return () => {
       ws.current?.close()
     }
-  }, [setId, setRole, setKnownEvils, setClericInfo])
+  }, [setId, setRole, setKnownEvils, setClericInfo, setAmuletInfo])
 
   const sendMessage = (message: object) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {

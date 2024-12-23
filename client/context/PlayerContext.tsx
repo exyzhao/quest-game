@@ -11,6 +11,18 @@ interface PlayerContextValue {
   setKnownEvils: (evils: string[] | null) => void
   clericInfo: { firstLeader: string; isGood: boolean } | null
   setClericInfo: (info: { firstLeader: string; isGood: boolean } | null) => void
+  amuletInfo: {
+    amuletHolder: string
+    amuletUsedOn: string
+    isGood: boolean
+  } | null
+  setAmuletInfo: (
+    info: {
+      amuletHolder: string
+      amuletUsedOn: string
+      isGood: boolean
+    } | null,
+  ) => void
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null)
@@ -21,6 +33,11 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [knownEvils, setKnownEvils] = useState<string[] | null>(null)
   const [clericInfo, setClericInfo] = useState<{
     firstLeader: string
+    isGood: boolean
+  } | null>(null)
+  const [amuletInfo, setAmuletInfo] = useState<{
+    amuletHolder: string
+    amuletUsedOn: string
     isGood: boolean
   } | null>(null)
 
@@ -35,6 +52,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
         setKnownEvils,
         clericInfo,
         setClericInfo,
+        amuletInfo,
+        setAmuletInfo,
       }}
     >
       {children}

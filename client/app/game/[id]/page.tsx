@@ -15,7 +15,7 @@ export default function GamePage() {
   const { sendMessage, lobbyState } = useWebSocketContext()
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
-  const { id, role, knownEvils, clericInfo } = usePlayerContext()
+  const { id, role, knownEvils, clericInfo, amuletInfo } = usePlayerContext()
   const router = useRouter()
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
   const [tokenHolder, setTokenHolder] = useState<string | null>(null)
@@ -157,6 +157,9 @@ export default function GamePage() {
     } else {
       if (role === 'Cleric' && clericInfo?.firstLeader === playerId) {
         return clericInfo.isGood ? blue : red
+      }
+      if (amuletInfo?.amuletUsedOn === playerId) {
+        return amuletInfo.isGood ? blue : red
       }
       if (knownEvils && knownEvils.includes(playerId)) {
         return red
@@ -633,6 +636,27 @@ export default function GamePage() {
             is{' '}
             <span className={playerNameColor(clericInfo.firstLeader)}>
               {clericInfo.isGood ? 'good' : 'evil'}
+            </span>
+            .
+          </p>
+        </div>
+      )}
+      {/* Amulet Info */}
+      {amuletInfo && (
+        <div>
+          <h3>Amulet Info:</h3>
+          <p>
+            <span className={playerNameColor(amuletInfo.amuletUsedOn)}>
+              {
+                R.find(
+                  lobbyState.players,
+                  (p) => p.id === amuletInfo.amuletUsedOn,
+                )?.name
+              }
+            </span>{' '}
+            is{' '}
+            <span className={playerNameColor(amuletInfo.amuletUsedOn)}>
+              {amuletInfo.isGood ? 'good' : 'evil'}
             </span>
             .
           </p>
