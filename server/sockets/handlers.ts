@@ -159,6 +159,18 @@ export const handleJoinGame = (
         })
       }
 
+      // Resend amulet info
+      const maybeAmuletResult = lobby.amuletHistory.find(
+        (result) => result.amuletHolder === reconnectingPlayer.id,
+      )
+
+      if (maybeAmuletResult) {
+        sendPrivateMessage(wss, reconnectingPlayer.id, {
+          event: 'AMULET_INFO',
+          message: maybeAmuletResult,
+        })
+      }
+
       console.log(`Player ${playerName} reconnected to lobby ${lobbyId}.`)
 
       broadcastToLobby(wss, lobbyId, {
@@ -402,24 +414,6 @@ export const handleConfirmTeam = (
   }
 }
 
-export const handleConfirmAmuletUsage = (
-  ws: MyWebSocket,
-  message: { lobbyId: string },
-  wss: MyWebSocketServer,
-) => {
-  const { lobbyId } = message
-  const lobby = lobbies[lobbyId]
-  try {
-    confirmAmuletUsage(lobby)
-    broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
-      state: lobby,
-    })
-  } catch (e) {
-    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
-  }
-}
-
 export const handleSubmitQuest = (
   ws: MyWebSocket,
   message: { lobbyId: string; playerId: string; isQuestCardPass: boolean },
@@ -586,15 +580,42 @@ export const handleConfirmLeader = (
 ) => {
   const { lobbyId } = message
   const lobby = lobbies[lobbyId]
-  try {
-    confirmLeader(lobby)
-    broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
-      state: lobby,
-    })
-  } catch (e) {
-    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  confirmLeader(lobby)
+  broadcastToLobby(wss, lobbyId, {
+    event: GAME_STATE_UPDATE,
+    state: lobby,
+  })
+}
+
+export const handleConfirmAmuletUsage = (
+  ws: MyWebSocket,
+  message: { lobbyId: string },
+  wss: MyWebSocketServer,
+) => {
+  const { lobbyId } = message
+  const lobby = lobbies[lobbyId]
+
+  confirmAmuletUsage(lobby)
+  broadcastToLobby(wss, lobbyId, {
+    event: GAME_STATE_UPDATE,
+    state: lobby,
+  })
+
+  const latestResult = lobby.amuletHistory.find(
+    (result) => result.amuletHolder === ws.playerId,
+  )
+
+  if (!latestResult) {
+    ws.send(
+      JSON.stringify({
+        event: 'ERROR',
+        error: 'No amulet usages found in amulet history.',
+      }),
+    )
+    return
   }
+
+  ws.send(JSON.stringify({ event: 'AMULET_INFO', message: latestResult }))
 }
 
 // Helper function to broadcast a message to all clients in a lobby

@@ -6,7 +6,7 @@ export interface QuestRules {
 }
 
 export const getQuestRules = (playerCount: number): QuestRules[] => {
-  // TODO: change back to 4 player min
+  // TODO: change back to no amulets in early rounds
   if (playerCount >= 4 && playerCount <= 8) {
     return [
       { round: 1, requiredPlayers: 3, failsRequired: 1, amulet: false },
