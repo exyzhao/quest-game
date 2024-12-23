@@ -26,11 +26,9 @@ export interface Lobby {
   clericInfo?: { firstLeader: string; isGood: boolean }
   knownEvils?: string[] // Player ids
   veterans: string[] // Player ids
-  // TODO: amulet history
-  amulets: string[]
-  fadedAmulets: string[]
   rules?: QuestRules[]
   questHistory: QuestResult[]
+  amuletHistory: AmuletResult[]
   currentLeader: string | null
   upcomingLeader: string | null
   amuletHolder: string | null
@@ -50,4 +48,10 @@ export interface QuestResult {
   team: string[]
   fails: number
   result: 'Passed' | 'Failed'
+}
+
+interface AmuletResult {
+  amuletHolder: string
+  amuletUsedOn: string
+  isGood: boolean
 }

@@ -81,7 +81,12 @@ export const confirmLeader = (lobby: Lobby) => {
   if (lobby.veterans.includes(lobby.upcomingLeader)) {
     throw new Error(`${lobby.upcomingLeader} is a veteran.`)
   }
-  if (lobby.amuletHolder && lobby.amulets.includes(lobby.amuletHolder)) {
+  if (
+    lobby.amuletHolder &&
+    lobby.amuletHistory.some(
+      (result) => result.amuletHolder === lobby.amuletHolder,
+    )
+  ) {
     throw new Error(`${lobby.amuletHolder} is holding an amulet.`)
   }
   if (lobby.currentLeader === lobby.amuletHolder) {
@@ -90,28 +95,39 @@ export const confirmLeader = (lobby: Lobby) => {
 
   lobby.currentLeader = lobby.upcomingLeader
   lobby.upcomingLeader = null
-  if (lobby.amuletHolder) {
-    lobby.amulets.push(lobby.amuletHolder)
-  }
 
   advancePhase(lobby)
 }
 
 export const confirmAmuletUsage = (lobby: Lobby) => {
+  if (!lobby.amuletHolder) {
+    throw new Error('Invalid amulet holder.')
+  }
   if (!lobby.amuletUsedOn) {
     throw new Error('No amulet usage selected.')
   }
-  if (lobby.amulets.includes(lobby.amuletUsedOn)) {
+  if (
+    lobby.amuletHistory.some(
+      (result) => result.amuletHolder === lobby.amuletUsedOn,
+    )
+  ) {
     throw new Error(`${lobby.amuletUsedOn} is holding an amulet.`)
   }
-  if (lobby.fadedAmulets.includes(lobby.amuletUsedOn)) {
+  if (
+    lobby.amuletHistory.some(
+      (result) => result.amuletUsedOn === lobby.amuletUsedOn,
+    )
+  ) {
     throw new Error(`${lobby.amuletUsedOn} is holding a faded amulet.`)
   }
 
-  lobby.fadedAmulets.push(lobby.amuletUsedOn)
+  lobby.amuletHistory.push({
+    amuletHolder: lobby.amuletHolder,
+    amuletUsedOn: lobby.amuletUsedOn,
+    isGood: true,
+  })
   lobby.amuletHolder = null
   lobby.amuletUsedOn = null
-  // TODO: change to amulet history
 
   advancePhase(lobby)
 }
