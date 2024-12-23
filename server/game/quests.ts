@@ -106,6 +106,9 @@ export const confirmAmuletUsage = (lobby: Lobby) => {
   if (!lobby.amuletUsedOn) {
     throw new Error('No amulet usage selected.')
   }
+  if (lobby.amuletHolder === lobby.amuletUsedOn) {
+    throw new Error('Cannot use amulet on yourself.')
+  }
   if (
     lobby.amuletHistory.some(
       (result) => result.amuletHolder === lobby.amuletUsedOn,
@@ -121,10 +124,24 @@ export const confirmAmuletUsage = (lobby: Lobby) => {
     throw new Error(`${lobby.amuletUsedOn} is holding a faded amulet.`)
   }
 
+  const playerBeingChecked = lobby.players.find(
+    (p) => p.id === lobby.amuletUsedOn,
+  )
+
+  if (!playerBeingChecked?.role) {
+    throw new Error(`${lobby.amuletUsedOn} has no role.`)
+  }
+
+  const showsAsGood =
+    !playerBeingChecked.role.includes('Morgan le Fey') &&
+    !playerBeingChecked.role.includes('Blind Hunter') &&
+    !playerBeingChecked.role.includes('Minion of Mordred') &&
+    !playerBeingChecked.role.includes('Troublemaker')
+
   lobby.amuletHistory.push({
     amuletHolder: lobby.amuletHolder,
     amuletUsedOn: lobby.amuletUsedOn,
-    isGood: true,
+    isGood: showsAsGood,
   })
   lobby.amuletHolder = null
   lobby.amuletUsedOn = null

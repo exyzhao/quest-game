@@ -318,7 +318,7 @@ export const handleStartGame = (
     // Notify cleric about first leader allegiance
     const cleric = lobby.players.find((player) => player.role === 'Cleric')
     if (cleric && questLeader.role) {
-      const isGood =
+      const showsAsGood =
         !questLeader.role.includes('Morgan le Fey') &&
         !questLeader.role.includes('Blind Hunter') &&
         !questLeader.role.includes('Minion of Mordred') &&
@@ -326,7 +326,7 @@ export const handleStartGame = (
 
       const clericInfo = {
         firstLeader: questLeader.id,
-        isGood,
+        isGood: showsAsGood,
       }
 
       lobby.clericInfo = clericInfo

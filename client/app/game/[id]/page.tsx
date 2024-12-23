@@ -322,8 +322,11 @@ export default function GamePage() {
     if (
       lobbyState.phase === 'AMULET_CHECK' &&
       lobbyState.amuletHolder === id &&
-      !lobbyState.amulets.includes(player.id) &&
-      !lobbyState.fadedAmulets.includes(player.id)
+      !lobbyState.amuletHistory.some(
+        (result) =>
+          result.amuletHolder === player.id || result.amuletUsedOn == player.id,
+      ) &&
+      id !== player.id
     ) {
       updateAmuletUsage(player.id)
     }
@@ -344,8 +347,11 @@ export default function GamePage() {
     if (
       lobbyState.phase === 'AMULET_CHECK' &&
       lobbyState.amuletHolder === id &&
-      !lobbyState.amulets.includes(player.id) &&
-      !lobbyState.fadedAmulets.includes(player.id)
+      !lobbyState.amuletHistory.some(
+        (result) =>
+          result.amuletHolder === player.id || result.amuletUsedOn == player.id,
+      ) &&
+      id !== player.id
     ) {
       return true
     }
@@ -452,7 +458,9 @@ export default function GamePage() {
               {lobbyState.phase === 'LEADER_SELECTION' &&
                 currentRule.amulet &&
                 !lobbyState.veterans.includes(player.id) &&
-                !lobbyState.amulets.includes(player.id) && (
+                !lobbyState.amuletHistory.some(
+                  (result) => result.amuletHolder === player.id,
+                ) && (
                   <button
                     onClick={() => isLeader && assignAmuletHolder(player.id)}
                     className={`absolute top-[88px] w-[90px] text-sm ${lobbyState.amuletHolder === player.id ? 'bg-purple-300' : 'bg-white'}`}
