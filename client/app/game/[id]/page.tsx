@@ -299,7 +299,19 @@ export default function GamePage() {
   const updateHunted = (playerId: string) => {
     if (me.role !== 'Blind Hunter') return
 
-    // TODO
+    const hunted = lobbyState.hunted
+    let updatedHunt
+    if (!hunted.some((p) => p.playerId === playerId) && hunted.length < 2) {
+      updatedHunt = hunted.push({ playerId })
+    } else if (hunted.some((p) => p.playerId === playerId)) {
+      updatedHunt = hunted.filter((p) => p.playerId === playerId)
+    }
+
+    sendMessage({
+      event: 'UPDATE_HUNTED',
+      lobbyId,
+      updatedHunt,
+    })
   }
 
   const updatePointed = (playerId: string) => {
@@ -363,6 +375,25 @@ export default function GamePage() {
   const startTheHunt = () => {
     sendMessage({
       event: 'HUNT_STARTED',
+      lobbyId,
+    })
+  }
+
+  const confirmHunted = () => {
+    if (lobbyState.hunted.length !== 2) {
+      alert(`Please select exactly two players to hunt.`)
+      return
+    }
+    if (!lobbyState.hunted.some((p) => p.role === 'Cleric')) {
+      alert(`Please select the Cleric.`)
+      return
+    }
+    if (!lobbyState.hunted.some((p) => p.role !== 'Cleric')) {
+      alert(`Please select the a good role other than the Cleric.`)
+      return
+    }
+    sendMessage({
+      event: 'CONFIRM_HUNTED',
       lobbyId,
     })
   }

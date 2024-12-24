@@ -72,6 +72,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     amuletHolder: null,
     amuletUsedOn: null,
     discussionStartTime: null,
+    hunted: [],
     knownEvils: ['player-1', 'player-2'],
     clericInfo: {
       firstLeader: 'player-1',
@@ -124,6 +125,7 @@ export const handleJoinGame = (
       magicTokenHolder: null,
       questSubmissions: [],
       discussionStartTime: null,
+      hunted: [],
     }
   }
 
@@ -638,6 +640,45 @@ export const handleHuntStarted = (
     event: GAME_STATE_UPDATE,
     state: lobby,
   })
+}
+
+export const handleUpdateHunted = (
+  ws: MyWebSocket,
+  message: {
+    lobbyId: string
+    hunted: { playerId: string; role?: string }[]
+  },
+  wss: MyWebSocketServer,
+) => {
+  const { lobbyId, hunted } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    // updateTeam(lobby, selectedPlayers, magicTokenHolder)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const handleConfirmHunted = (
+  ws: MyWebSocket,
+  message: { lobbyId: string },
+  wss: MyWebSocketServer,
+) => {
+  const { lobbyId } = message
+  const lobby = lobbies[lobbyId]
+  try {
+    // confirmTeam(lobby)
+    broadcastToLobby(wss, lobbyId, {
+      event: GAME_STATE_UPDATE,
+      state: lobby,
+    })
+  } catch (e) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
 }
 
 // Helper function to broadcast a message to all clients in a lobby

@@ -38,7 +38,7 @@ export interface Lobby {
   magicTokenHolder: string | null
   questSubmissions: { playerId: string; isQuestCardPass: boolean }[]
   discussionStartTime: number | null
-  hunted?: { playerId: string; role: string }[]
+  hunted: { playerId: string; role?: string }[]
 }
 
 export type sanitizedLobby = Omit<Lobby, 'clericInfo | knownEvils'>
