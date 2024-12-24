@@ -616,6 +616,122 @@ export default function GamePage() {
     )
   }
 
+  const PhaseMessage = () => {
+    switch (lobbyState.phase) {
+      case 'TEAM_SELECTION':
+        return isLeader ? (
+          <p>
+            Select <strong>{currentRule.requiredPlayers}</strong> players for
+            the quest.
+          </p>
+        ) : (
+          <p>
+            Waiting for{' '}
+            <span className={playerNameColor(currentLeader.id)}>
+              {currentLeader.name}
+            </span>{' '}
+            to select the team...
+          </p>
+        )
+      case 'LEADER_SELECTION':
+        return isLeader ? (
+          <p>
+            Select the next quest leader
+            {currentRule.amulet ? ' and amulet holder' : ''}.
+          </p>
+        ) : (
+          <p>
+            Waiting for{' '}
+            <span className={playerNameColor(currentLeader.id)}>
+              {currentLeader.name}
+            </span>{' '}
+            to select the next quest leader...
+          </p>
+        )
+      case 'AMULET_CHECK':
+        if (!lobbyState.amuletHolder) {
+          return <p>Error: no amulet holder assigned.</p>
+        }
+        return lobbyState.amuletHolder === id ? (
+          <p>Select a player to use the amulet on.</p>
+        ) : (
+          <p>
+            Waiting for{' '}
+            <span className={playerNameColor(lobbyState.amuletHolder)}>
+              {getPlayerFromId(lobbyState.amuletHolder)?.name}
+            </span>{' '}
+            to use the amulet...
+          </p>
+        )
+      case 'QUEST_RESOLUTION':
+        return <p>Waiting for the team to resolve the quest...</p>
+      case 'THE_DISCUSSION':
+        return (
+          <p>
+            You have{' '}
+            {remainingTime !== null ? formatTime(remainingTime) : '5:00'}{' '}
+            remaining to discuss who the{' '}
+            <span className="text-red-700">evils</span> may be.
+          </p>
+        )
+      case 'GOODS_LAST_CHANCE':
+        if (
+          !!remainingTime &&
+          remainingTime > 0 &&
+          me.role === 'Blind Hunter'
+        ) {
+          return (
+            <p>
+              You may choose to begin the Hunt. If so, you must identify the{' '}
+              <span className="text-blue-500">Cleric</span> and one other{' '}
+              <span className="text-blue-500">good</span> player's role. You
+              have {remainingTime} second(s) to decide.
+            </p>
+          )
+        } else if (
+          !!remainingTime &&
+          remainingTime > 0 &&
+          me.role !== 'Blind Hunter'
+        ) {
+          return (
+            <p>
+              The <span className="text-red-700">Blind Hunter</span> has{' '}
+              {remainingTime} second(s) to decide whether to begin the Hunt.
+            </p>
+          )
+        } else {
+          return (
+            <p>
+              Select exactly two players to accuse.{' '}
+              <span className="text-blue-500">Good</span> players must
+              collectively accuse all <span className="text-red-700">evil</span>{' '}
+              players and cannot wrongly accuse any{' '}
+              <span className="text-blue-500">good</span> players.
+            </p>
+          )
+        }
+      case 'THE_HUNT':
+        return me.role === 'Blind Hunter' ? (
+          <p>
+            Identify the <span className="text-blue-500">Cleric</span> and one
+            other <span className="text-blue-500">good</span> player's role. No
+            talking is allowed.
+          </p>
+        ) : (
+          <p>
+            <span className="text-red-700">
+              {lobbyState.players.find((p) => p.role === 'Blind Hunter')?.name}
+            </span>{' '}
+            has decided to hunt. No talking is allowed. Waiting for{' '}
+            <span className="text-red-700">
+              {lobbyState.players.find((p) => p.role === 'Blind Hunter')?.name}
+            </span>{' '}
+            to complete the hunt...
+          </p>
+        )
+    }
+  }
+
   // For debugging
   console.log(lobbyState)
 
@@ -629,111 +745,7 @@ export default function GamePage() {
           {role}
         </span>
       </h2>
-      {lobbyState.phase === 'TEAM_SELECTION' && isLeader && (
-        <p>
-          Select <strong>{currentRule.requiredPlayers}</strong> players for the
-          quest.
-        </p>
-      )}
-      {lobbyState.phase === 'TEAM_SELECTION' && !isLeader && (
-        <p>
-          Waiting for{' '}
-          <span className={playerNameColor(currentLeader.id)}>
-            {currentLeader.name}
-          </span>{' '}
-          to select the team...
-        </p>
-      )}
-      {lobbyState.phase === 'LEADER_SELECTION' && isLeader && (
-        <p>
-          Select the next quest leader
-          {currentRule.amulet ? ' and amulet holder' : ''}.
-        </p>
-      )}
-      {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
-        <p>
-          Waiting for{' '}
-          <span className={playerNameColor(currentLeader.id)}>
-            {currentLeader.name}
-          </span>{' '}
-          to select the next quest leader...
-        </p>
-      )}
-      {lobbyState.phase === 'AMULET_CHECK' &&
-        lobbyState.amuletHolder === id && (
-          <p>Select a player to use the amulet on.</p>
-        )}
-      {/* TODO: swap this to amulet holder name */}
-      {lobbyState.phase === 'AMULET_CHECK' &&
-        lobbyState.amuletHolder &&
-        lobbyState.amuletHolder !== id && (
-          <p>
-            Waiting for{' '}
-            <span className={playerNameColor(lobbyState.amuletHolder)}>
-              {getPlayerFromId(lobbyState.amuletHolder)?.name}
-            </span>{' '}
-            to use the amulet...
-          </p>
-        )}
-      {lobbyState.phase === 'QUEST_RESOLUTION' && (
-        <p>Waiting for the team to resolve the quest...</p>
-      )}
-      {lobbyState.phase === 'THE_DISCUSSION' && (
-        <p>
-          You have {remainingTime !== null ? formatTime(remainingTime) : '5:00'}{' '}
-          remaining to discuss who the{' '}
-          <span className="text-red-700">evils</span> may be.
-        </p>
-      )}
-      {lobbyState.phase === 'GOODS_LAST_CHANCE' &&
-        !!remainingTime &&
-        remainingTime > 0 &&
-        me.role === 'Blind Hunter' && (
-          <p>
-            You may choose to begin the Hunt. If so, you must identify the{' '}
-            <span className="text-blue-500">Cleric</span> and one other{' '}
-            <span className="text-blue-500">good</span> player's role. You have{' '}
-            {remainingTime} second(s) to decide.
-          </p>
-        )}
-      {lobbyState.phase === 'GOODS_LAST_CHANCE' &&
-        !!remainingTime &&
-        remainingTime > 0 &&
-        me.role !== 'Blind Hunter' && (
-          <p>
-            The <span className="text-red-700">Blind Hunter</span> has{' '}
-            {remainingTime} second(s) to decide whether to begin the Hunt.
-          </p>
-        )}
-      {lobbyState.phase === 'THE_HUNT' && me.role === 'Blind Hunter' && (
-        <p>
-          Identify the <span className="text-blue-500">Cleric</span> and one
-          other <span className="text-blue-500">good</span> player's role. No
-          talking is allowed.
-        </p>
-      )}
-      {lobbyState.phase === 'THE_HUNT' && me.role !== 'Blind Hunter' && (
-        <p>
-          <span className="text-red-700">
-            {lobbyState.players.find((p) => p.role === 'Blind Hunter')?.name}
-          </span>{' '}
-          has decided to hunt. No talking is allowed. Waiting for{' '}
-          <span className="text-red-700">
-            {lobbyState.players.find((p) => p.role === 'Blind Hunter')?.name}
-          </span>{' '}
-          to complete the hunt...
-        </p>
-      )}
-      {lobbyState.phase === 'GOODS_LAST_CHANCE' &&
-        (!remainingTime || remainingTime <= 0) && (
-          <p>
-            Select exactly two players to accuse.{' '}
-            <span className="text-blue-500">Good</span> players must
-            collectively accuse all <span className="text-red-700">evil</span>{' '}
-            players and cannot wrongly accuse any{' '}
-            <span className="text-blue-500">good</span> players.
-          </p>
-        )}
+      <PhaseMessage />
       <div className="mb-12 p-8">
         <PlayerList />
       </div>
