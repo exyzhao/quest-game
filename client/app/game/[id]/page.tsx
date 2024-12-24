@@ -42,29 +42,23 @@ export default function GamePage() {
       const elapsed = Math.floor(
         (Date.now() - lobbyState.discussionStartTime) / 1000,
       )
+      const discussionTime = 20 // 5 minutes
+      const blindHunterChance = 10 // 10 seconds for Blind Hunter to opt into hunting
 
       if (lobbyState.phase === 'THE_DISCUSSION') {
-        const discussionTime = 20 // 5 minutes
         const timeLeft = discussionTime - elapsed
         setRemainingTime(Math.max(0, timeLeft))
 
         if (timeLeft <= 0) {
           clearInterval(timer) // Stop ticking when the timer hits 0
         }
-      } else if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
-        const totalTime = 20 // Total time for GOODS_LAST_CHANCE
-        const firstSegment = 5 // Time for Blind Hunter (5s) => Time for pointing (15s)
-
-        const timeLeft = totalTime - elapsed
-
-        if (elapsed <= firstSegment) {
-          setRemainingTime(firstSegment - elapsed)
-        } else {
-          setRemainingTime(Math.max(0, timeLeft - firstSegment))
-        }
+      }
+      if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
+        const timeLeft = discussionTime + blindHunterChance - elapsed
+        setRemainingTime(Math.max(0, timeLeft))
 
         if (timeLeft <= 0) {
-          clearInterval(timer) // Stop ticking when the timer hits 0
+          clearInterval(timer)
         }
       }
     }
@@ -685,7 +679,11 @@ export default function GamePage() {
       )}
       {lobbyState.phase === 'LEADER_SELECTION' && !isLeader && (
         <p>
-          Waiting for {currentLeader.name} to select the next quest leader...
+          Waiting for{' '}
+          <span className={playerNameColor(currentLeader.id)}>
+            {currentLeader.name}
+          </span>{' '}
+          to select the next quest leader...
         </p>
       )}
       {lobbyState.phase === 'AMULET_CHECK' &&
@@ -694,8 +692,15 @@ export default function GamePage() {
         )}
       {/* TODO: swap this to amulet holder name */}
       {lobbyState.phase === 'AMULET_CHECK' &&
+        lobbyState.amuletHolder &&
         lobbyState.amuletHolder !== id && (
-          <p>Waiting for {lobbyState.amuletHolder} to use the amulet...</p>
+          <p>
+            Waiting for{' '}
+            <span className={playerNameColor(lobbyState.amuletHolder)}>
+              {getPlayerFromId(lobbyState.amuletHolder)?.name}
+            </span>{' '}
+            to use the amulet...
+          </p>
         )}
       {lobbyState.phase === 'QUEST_RESOLUTION' && (
         <p>Waiting for the team to resolve the quest...</p>
@@ -703,13 +708,35 @@ export default function GamePage() {
       {lobbyState.phase === 'THE_DISCUSSION' && (
         <p>
           You have {remainingTime !== null ? formatTime(remainingTime) : '5:00'}{' '}
-          remaining to discuss who the evils may be.
+          remaining to discuss who the{' '}
+          <span className="text-red-700">evils</span> may be.
         </p>
       )}
+      {lobbyState.phase === 'GOODS_LAST_CHANCE' &&
+        !!remainingTime &&
+        remainingTime > 0 &&
+        me.role === 'Blind Hunter' && (
+          <p>
+            You may choose to begin the Hunt. If so, you must identify the
+            <span className="text-blue-500">Cleric</span> and one other{' '}
+            <span className="text-blue-500">good</span> player's role. You have{' '}
+            {remainingTime} second(s) to decide.
+          </p>
+        )}
+      {lobbyState.phase === 'GOODS_LAST_CHANCE' &&
+        !!remainingTime &&
+        remainingTime > 0 &&
+        me.role !== 'Blind Hunter' && (
+          <p>
+            The <span className="text-red-700">Blind Hunter</span> has{' '}
+            {remainingTime} second(s) to decide whether to begin the Hunt.
+          </p>
+        )}
       {lobbyState.phase === 'THE_HUNT' && me.role === 'Blind Hunter' && (
         <p>
-          Identify the cleric and one other good player's role. No talking is
-          allowed.
+          Identify the <span className="text-blue-500">Cleric</span> and one
+          other <span className="text-blue-500">good</span> player's role. No
+          talking is allowed.
         </p>
       )}
       {lobbyState.phase === 'THE_HUNT' && me.role !== 'Blind Hunter' && (
@@ -724,15 +751,16 @@ export default function GamePage() {
           to complete the hunt...
         </p>
       )}
-      {lobbyState.phase === 'GOODS_LAST_CHANCE' && (
-        <p>
-          Select exactly two players to accuse.{' '}
-          <span className="text-blue-500">Good</span> players must collectively
-          accuse all <span className="text-red-700">evil</span> players and
-          cannot wrongly accuse any <span className="text-blue-500">good</span>{' '}
-          players.
-        </p>
-      )}
+      {lobbyState.phase === 'GOODS_LAST_CHANCE' &&
+        (!remainingTime || remainingTime <= 0) && (
+          <p>
+            Select exactly two players to accuse.{' '}
+            <span className="text-blue-500">Good</span> players must
+            collectively accuse all <span className="text-red-700">evil</span>{' '}
+            players and cannot wrongly accuse any{' '}
+            <span className="text-blue-500">good</span> players.
+          </p>
+        )}
       <div className="mb-12 p-8">
         <PlayerList />
       </div>
@@ -758,7 +786,7 @@ export default function GamePage() {
         lobbyState.discussionStartTime &&
         Date.now() < lobbyState.discussionStartTime + 305000 ? (
           <button className="bg-green-300" onClick={startTheHunt}>
-            Start the Hunt
+            Begin the Hunt
           </button>
         ) : null}
       </div>

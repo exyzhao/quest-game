@@ -56,12 +56,8 @@ export const advancePhase = (lobby: Lobby) => {
       break
 
     case 'THE_HUNT':
-      if (lobby.isHunting) {
-        const huntSuccessful = isHuntSuccessful(lobby)
-        lobby.phase = huntSuccessful ? 'EVIL_VICTORY' : 'GOOD_VICTORY'
-      } else {
-        lobby.phase = 'GOODS_LAST_CHANCE'
-      }
+      const huntSuccessful = isHuntSuccessful(lobby)
+      lobby.phase = huntSuccessful ? 'EVIL_VICTORY' : 'GOOD_VICTORY'
       break
 
     case 'GOODS_LAST_CHANCE':

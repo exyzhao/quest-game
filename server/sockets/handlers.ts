@@ -72,7 +72,6 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     amuletHolder: null,
     amuletUsedOn: null,
     discussionStartTime: null,
-    isHunting: false,
     knownEvils: ['player-1', 'player-2'],
     clericInfo: {
       firstLeader: 'player-1',
@@ -126,7 +125,6 @@ export const handleJoinGame = (
       magicTokenHolder: null,
       questSubmissions: [],
       discussionStartTime: null,
-      isHunting: false,
     }
   }
 
@@ -643,6 +641,20 @@ export const handleConfirmAmuletUsage = (
   }
 
   ws.send(JSON.stringify({ event: 'AMULET_INFO', message: latestResult }))
+}
+
+export const handleHuntStarted = (
+  ws: MyWebSocket,
+  message: { lobbyId: string },
+  wss: MyWebSocketServer,
+) => {
+  const { lobbyId } = message
+  const lobby = lobbies[lobbyId]
+  lobby.phase === 'THE_HUNT'
+  broadcastToLobby(wss, lobbyId, {
+    event: GAME_STATE_UPDATE,
+    state: lobby,
+  })
 }
 
 // Helper function to broadcast a message to all clients in a lobby

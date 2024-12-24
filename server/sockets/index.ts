@@ -19,6 +19,7 @@ import {
   handleUpdateAmuletUsage,
   handleConfirmLeader,
   handleConfirmAmuletUsage,
+  handleHuntStarted,
 } from './handlers'
 import { IncomingMessage } from 'http'
 
@@ -79,6 +80,8 @@ export const initWebSockets = (server: import('http').Server) => {
         case 'CONFIRM_AMULET_USAGE':
           handleConfirmAmuletUsage(ws, data, wss)
           break
+        case 'HUNT_STARTED':
+          handleHuntStarted(ws, data, wss)
         default:
           ws.send(JSON.stringify({ error: 'Unknown event: ' + data.event }))
           break
