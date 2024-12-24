@@ -458,6 +458,18 @@ export default function GamePage() {
               lobbyState.amuletUsedOn === player.id
             ) {
               return 'ring-[6px] ring-gray-500'
+            }
+            if (
+              lobbyState.phase === 'THE_HUNT' &&
+              lobbyState.hunted?.some((p) => p.playerId === playerId)
+            ) {
+              return 'ring-[6px] ring-gray-500'
+            }
+            if (
+              lobbyState.phase === 'GOODS_LAST_CHANCE' &&
+              pointed.includes(playerId)
+            ) {
+              return 'ring-[6px] ring-gray-500'
             } else {
               return ''
             }
