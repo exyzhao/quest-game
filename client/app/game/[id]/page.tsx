@@ -8,7 +8,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { usePlayerContext } from '@/context/PlayerContext'
 import { useRemainingTime } from '@/hooks/useRemainingTime'
 
-import { Player } from '../../../../shared/types'
+import { Player, QuestResult } from '../../../../shared/types'
 import { QuestRules } from '../../../../server/game/ruleset'
 // import { evilRoles } from '@/shared/constants' TODO
 
@@ -58,6 +58,9 @@ export default function GamePage() {
 
   if (!lobbyState.currentLeader) {
     return <p>ERROR: No leader assigned.</p>
+  }
+  if (!lobbyState.rules) {
+    return <p>ERROR: No rules.</p>
   }
 
   // Helpers
@@ -127,12 +130,16 @@ export default function GamePage() {
     return size
   }
 
-  const QuestRoadmap = () => (
+  const QuestRoadmap = ({
+    rules,
+    questHistory,
+  }: {
+    rules: QuestRules[]
+    questHistory: QuestResult[]
+  }) => (
     <div className="mx-auto flex max-w-md justify-around gap-2">
-      {lobbyState.rules?.map((rule: QuestRules) => {
-        const quest = lobbyState.questHistory?.find(
-          (q) => q.round === rule.round,
-        )
+      {rules.map((rule) => {
+        const quest = questHistory.find((q) => q.round === rule.round)
 
         const questColor =
           quest?.result === 'Passed'
@@ -729,9 +736,11 @@ export default function GamePage() {
   console.log(lobbyState)
 
   return (
-    // TODO: refactor main into component
     <main className="flex flex-col gap-6">
-      <QuestRoadmap />
+      <QuestRoadmap
+        rules={lobbyState.rules}
+        questHistory={lobbyState.questHistory}
+      />
       <h2>
         Your Role:{' '}
         <span className={`${isGoodPlayer ? 'text-blue-500' : 'text-red-700'}`}>

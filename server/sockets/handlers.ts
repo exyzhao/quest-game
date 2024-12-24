@@ -97,13 +97,12 @@ export const handleJoinGame = (
   const { lobbyId, playerName } = message
 
   if (!lobbyId || !playerName) {
-    ws.send(
+    return ws.send(
       JSON.stringify({
         event: 'ERROR',
         error: 'Missing lobbyId or playerName',
       }),
     )
-    return
   }
 
   // If lobby doesn't exist, create it
@@ -130,98 +129,86 @@ export const handleJoinGame = (
 
   const lobby = lobbies[lobbyId]
 
-  // Handle player reconnect
-  const reconnectingPlayerIndex = lobby.disconnectedPlayers.findIndex(
-    (player) => player.name === playerName,
-  )
-  if (reconnectingPlayerIndex !== -1) {
-    // Remove the player from disconnectedPlayers only
-    // TODO clean up logic
-    const reconnectingPlayer = lobby.players.find((p) => p.name === playerName)
-    lobby.disconnectedPlayers.splice(reconnectingPlayerIndex, 1)
-    // Associate WebSocket with the player's identity
-    if (reconnectingPlayer) {
-      ws.lobbyId = lobbyId
-      ws.playerId = reconnectingPlayer.id
-
-      if (reconnectingPlayer.role) {
-        sendPrivateMessage(wss, reconnectingPlayer.id, {
-          event: 'ROLE_ASSIGNED',
-          id: reconnectingPlayer.id,
-          role: reconnectingPlayer.role,
-        })
-      }
-
-      if (reconnectingPlayer.role === 'Cleric' && lobby.clericInfo) {
-        // Resend Cleric info
-        sendPrivateMessage(wss, reconnectingPlayer.id, {
-          event: 'CLERIC_INFO',
-          message: lobby.clericInfo,
-        })
-      }
-
-      if (
-        reconnectingPlayer.role &&
-        knownEvilRoles.includes(reconnectingPlayer.role) &&
-        lobby.knownEvils
-      ) {
-        // Resend known evils info
-        sendPrivateMessage(wss, reconnectingPlayer.id, {
-          event: 'EVIL_INFO',
-          message: lobby.knownEvils,
-        })
-      }
-
-      // Resend amulet info
-      const maybeAmuletResult = lobby.amuletHistory.find(
-        (result) => result.amuletHolder === reconnectingPlayer.id,
+  if (lobby.phase === 'LOBBY') {
+    if (lobby.players.find((player) => player.name === playerName)) {
+      return ws.send(
+        JSON.stringify({
+          event: 'ERROR',
+          error: 'A player with this name already exists in the lobby.',
+        }),
       )
-
-      if (maybeAmuletResult) {
-        sendPrivateMessage(wss, reconnectingPlayer.id, {
-          event: 'AMULET_INFO',
-          message: maybeAmuletResult,
-        })
-      }
-
-      console.log(`Player ${playerName} reconnected to lobby ${lobbyId}.`)
-
-      broadcastToLobby(wss, lobbyId, {
-        event: 'GAME_STATE_UPDATE',
-        state: lobby,
-      })
-      return
     }
-  }
 
-  if (lobby.phase !== 'LOBBY') {
-    ws.send(JSON.stringify({ event: 'ERROR', error: 'Game already started' }))
-    return
-  }
-
-  if (lobby.players.find((player) => player.name === playerName)) {
-    ws.send(
-      JSON.stringify({
-        event: 'ERROR',
-        error: 'A player with this name already exists in the lobby.',
-      }),
-    )
-    return
-  }
-
-  // Add player to lobby if they're not in it
-  const playerId = `player-${Date.now()}`
-  if (!lobby.players.find((player) => player.name === playerName)) {
+    const playerId = `player-${Date.now()}`
     lobby.players.push({ id: playerId, name: playerName })
+
+    // Associate this WebSocket connection with the lobby
+    ws.lobbyId = lobbyId
+    ws.playerId = playerId
+
+    // Broadcast the updated lobby state to all players in the lobby
+    console.log(`Player ${playerName} connected to lobby ${lobbyId}.`)
+    broadcastToLobby(wss, lobbyId, { event: GAME_STATE_UPDATE, state: lobby })
+    return
   }
 
-  // Associate this WebSocket connection with the lobby
-  ws.lobbyId = lobbyId
-  ws.playerId = playerId
+  // Handle reconnecting player
+  const reconnectingPlayer = lobby.players.find((p) => p.name === playerName)
+  if (!reconnectingPlayer) {
+    return ws.send(
+      JSON.stringify({ event: 'ERROR', error: 'Game already started' }),
+    )
+  }
 
-  // Broadcast the updated lobby state to all players in the lobby
-  console.log(`Player ${playerName} connected to lobby ${lobbyId}.`)
-  broadcastToLobby(wss, lobbyId, { event: GAME_STATE_UPDATE, state: lobby })
+  lobby.disconnectedPlayers = R.filter(
+    lobby.disconnectedPlayers,
+    (p) => p.name !== playerName,
+  )
+
+  ws.lobbyId = lobbyId
+  ws.playerId = reconnectingPlayer.id
+
+  // Resend all private information
+  if (reconnectingPlayer.role) {
+    sendPrivateMessage(wss, reconnectingPlayer.id, {
+      event: 'ROLE_ASSIGNED',
+      id: reconnectingPlayer.id,
+      role: reconnectingPlayer.role,
+    })
+  }
+  if (reconnectingPlayer.role === 'Cleric' && lobby.clericInfo) {
+    sendPrivateMessage(wss, reconnectingPlayer.id, {
+      event: 'CLERIC_INFO',
+      message: lobby.clericInfo,
+    })
+  }
+  if (
+    reconnectingPlayer.role &&
+    knownEvilRoles.includes(reconnectingPlayer.role) &&
+    lobby.knownEvils
+  ) {
+    sendPrivateMessage(wss, reconnectingPlayer.id, {
+      event: 'EVIL_INFO',
+      message: lobby.knownEvils,
+    })
+  }
+  const maybeAmuletResult = lobby.amuletHistory.find(
+    (result) => result.amuletHolder === reconnectingPlayer.id,
+  )
+  if (maybeAmuletResult) {
+    sendPrivateMessage(wss, reconnectingPlayer.id, {
+      event: 'AMULET_INFO',
+      message: maybeAmuletResult,
+    })
+  }
+
+  console.log(`Player ${playerName} reconnected to lobby ${lobbyId}.`)
+
+  broadcastToLobby(wss, lobbyId, {
+    event: 'GAME_STATE_UPDATE',
+    state: lobby,
+  })
+  return
 }
 
 export const handleDisconnection = (
@@ -239,18 +226,15 @@ export const handleDisconnection = (
 
   if (lobby.phase === 'LOBBY') {
     // Remove the player entirely if still in the lobby phase
-    const playerIndex = lobby.players.findIndex((p) => p.id === playerId)
-    if (playerIndex !== -1) {
-      const [removedPlayer] = lobby.players.splice(playerIndex, 1)
-      console.log(`Player ${removedPlayer.name} removed from lobby ${lobbyId}.`)
-    }
+    lobby.players = R.filter(lobby.players, (p) => p.id !== playerId)
+    console.log(`${player.name} removed from lobby ${lobbyId}.`)
   } else {
     // In game phase, just mark them as disconnected
     if (!lobby.disconnectedPlayers.find((dp) => dp.id === playerId)) {
       lobby.disconnectedPlayers.push(player)
     }
     console.log(
-      `Player ${player.name} disconnected during the game in lobby ${lobbyId}.`,
+      `${player.name} disconnected during the game in lobby ${lobbyId}.`,
     )
   }
 
@@ -283,8 +267,7 @@ export const handleStartGame = (
   }
 
   const playerCount = lobby.players.length
-  // TODO: adjust back
-  if (playerCount < 2 || playerCount > 10) {
+  if (playerCount < 4 || playerCount > 10) {
     ws.send(
       JSON.stringify({
         event: 'ERROR',
