@@ -1,4 +1,5 @@
 import { Lobby } from '../../shared/types'
+import { broadcastToLobby } from '../sockets/handlers'
 
 export type GamePhase =
   | 'LOBBY'
@@ -36,6 +37,7 @@ export const advancePhase = (lobby: Lobby) => {
         lobby.phase = 'GOOD_VICTORY'
       } else if (evilWins) {
         lobby.phase = 'THE_DISCUSSION'
+        lobby.discussionStartTime = Date.now()
       } else {
         lobby.phase = 'LEADER_SELECTION'
       }

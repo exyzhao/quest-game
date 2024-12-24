@@ -37,6 +37,7 @@ export interface Lobby {
   currentTeam: string[]
   magicTokenHolder: string | null
   questSubmissions: { playerId: string; isQuestCardPass: boolean }[]
+  discussionStartTime: number | null
   isHunting: boolean
   hunted?: { playerId: string; role: string }[]
 }

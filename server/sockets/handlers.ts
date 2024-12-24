@@ -46,10 +46,23 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
       // { id: 'player-7', name: 'minion1', role: 'Minion of Mordred' },
       // { id: 'player-8', name: 'minion2', role: 'Minion of Mordred' },
     ],
-    veterans: [],
-    questHistory: [],
+    veterans: ['player-2', 'player-3'],
+    questHistory: [
+      {
+        round: 1,
+        team: ['player-1', 'player-2', 'player-3'],
+        fails: 1,
+        result: 'Failed',
+      },
+      {
+        round: 2,
+        team: ['player-2', 'player-3'],
+        fails: 1,
+        result: 'Failed',
+      },
+    ],
     amuletHistory: [],
-    currentRound: 1,
+    currentRound: 3,
     currentTeam: [],
     magicTokenHolder: null,
     questSubmissions: [],
@@ -58,6 +71,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     upcomingLeader: null,
     amuletHolder: null,
     amuletUsedOn: null,
+    discussionStartTime: null,
     isHunting: false,
     knownEvils: ['player-1', 'player-2'],
     clericInfo: {
@@ -111,6 +125,7 @@ export const handleJoinGame = (
       currentTeam: [],
       magicTokenHolder: null,
       questSubmissions: [],
+      discussionStartTime: null,
       isHunting: false,
     }
   }
@@ -426,10 +441,10 @@ export const handleSubmitQuest = (
       ws.send(JSON.stringify({ event: 'ERROR', error: 'Lobby not found.' }))
       return
     }
-    if (lobby.phase !== 'QUEST_RESOLUTION') {
-      ws.send(JSON.stringify({ event: 'ERROR', error: 'Not the right phase.' }))
-      return
-    }
+    // if (lobby.phase !== 'QUEST_RESOLUTION') {
+    //   ws.send(JSON.stringify({ event: 'ERROR', error: 'Not the right phase.' }))
+    //   return
+    // }
     if (!lobby.currentTeam.includes(playerId)) {
       ws.send(
         JSON.stringify({
@@ -501,6 +516,18 @@ export const handleSubmitQuest = (
         event: 'GAME_STATE_UPDATE',
         state: lobby,
       })
+
+      if (lobby.phase === 'THE_DISCUSSION') {
+        setTimeout(() => {
+          if (lobby.phase === 'THE_DISCUSSION') {
+            lobby.phase = 'GOODS_LAST_CHANCE'
+            broadcastToLobby(wss, lobbyId, {
+              event: 'GAME_STATE_UPDATE',
+              state: lobby,
+            })
+          }
+        }, 20000) // 5 minutes
+      }
     } else {
       // Inform the player their card was submitted successfully
       ws.send(JSON.stringify({ event: 'CARD_RECEIVED', playerId }))
