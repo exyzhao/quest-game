@@ -69,6 +69,7 @@ export default function GamePage() {
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound,
   )
+  const { phase } = lobbyState
 
   if (!me || !currentLeader || !currentRule) {
     return <p>TODO ERROR2</p>
@@ -84,9 +85,9 @@ export default function GamePage() {
   const discussionTime = 20 // 5 minutes
   const blindHunterTime = 10 // 10 seconds for Blind Hunter to opt into hunting
   let totalSeconds = 0
-  if (lobbyState.phase === 'THE_DISCUSSION') {
+  if (phase === 'THE_DISCUSSION') {
     totalSeconds = discussionTime
-  } else if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
+  } else if (phase === 'GOODS_LAST_CHANCE') {
     totalSeconds = discussionTime + blindHunterTime
   }
   const remainingTime = useRemainingTime(
@@ -361,18 +362,18 @@ export default function GamePage() {
 
   // Mirrors isPlayerClickable
   const handlePlayerClick = (player: Player) => {
-    if (isLeader && lobbyState.phase === 'TEAM_SELECTION') {
+    if (isLeader && phase === 'TEAM_SELECTION') {
       togglePlayerSelection(player.id)
     }
     if (
       isLeader &&
-      lobbyState.phase === 'LEADER_SELECTION' &&
+      phase === 'LEADER_SELECTION' &&
       !lobbyState.veterans.includes(player.id)
     ) {
       toggleLeaderSelection(player.id)
     }
     if (
-      lobbyState.phase === 'AMULET_CHECK' &&
+      phase === 'AMULET_CHECK' &&
       lobbyState.amuletHolder === id &&
       !lobbyState.amuletHistory.some(
         (result) =>
@@ -383,31 +384,31 @@ export default function GamePage() {
       updateAmuletUsage(player.id)
     }
     if (
-      lobbyState.phase === 'THE_HUNT' &&
+      phase === 'THE_HUNT' &&
       me.role === 'Blind Hunter' &&
       player.id !== id
     ) {
       updateHunted(player.id)
     }
-    if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
+    if (phase === 'GOODS_LAST_CHANCE') {
       updatePointed(player.id)
     }
   }
 
   // Mirrors handlePlayerClick
   const isPlayerClickable = (player: Player) => {
-    if (lobbyState.phase === 'TEAM_SELECTION' && isLeader) {
+    if (phase === 'TEAM_SELECTION' && isLeader) {
       return true
     }
     if (
-      lobbyState.phase === 'LEADER_SELECTION' &&
+      phase === 'LEADER_SELECTION' &&
       isLeader &&
       !lobbyState.veterans.includes(player.id)
     ) {
       return true
     }
     if (
-      lobbyState.phase === 'AMULET_CHECK' &&
+      phase === 'AMULET_CHECK' &&
       lobbyState.amuletHolder === id &&
       !lobbyState.amuletHistory.some(
         (result) =>
@@ -418,13 +419,13 @@ export default function GamePage() {
       return true
     }
     if (
-      lobbyState.phase === 'THE_HUNT' &&
+      phase === 'THE_HUNT' &&
       me.role === 'Blind Hunter' &&
       player.id !== id
     ) {
       return true
     }
-    if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
+    if (phase === 'GOODS_LAST_CHANCE') {
       return true
     }
     return false
@@ -444,35 +445,17 @@ export default function GamePage() {
         {rotatePlayers(lobbyState.players, id).map((player, index) => {
           // Set color of ring if player is selected
           const ringColor = (playerId: string) => {
-            if (lobbyState.currentTeam.includes(playerId)) {
-              return 'ring-[6px] ring-gray-500'
-            }
-            if (
-              lobbyState.phase === 'LEADER_SELECTION' &&
-              lobbyState.upcomingLeader === playerId
-            ) {
-              return 'ring-[6px] ring-gray-500'
-            }
-            if (
-              lobbyState.phase === 'AMULET_CHECK' &&
-              lobbyState.amuletUsedOn === player.id
-            ) {
-              return 'ring-[6px] ring-gray-500'
-            }
-            if (
-              lobbyState.phase === 'THE_HUNT' &&
-              lobbyState.hunted?.some((p) => p.playerId === playerId)
-            ) {
-              return 'ring-[6px] ring-gray-500'
-            }
-            if (
-              lobbyState.phase === 'GOODS_LAST_CHANCE' &&
-              pointed.includes(playerId)
-            ) {
-              return 'ring-[6px] ring-gray-500'
-            } else {
-              return ''
-            }
+            const showRing =
+              lobbyState.currentTeam.includes(playerId) ||
+              (phase === 'LEADER_SELECTION' &&
+                lobbyState.upcomingLeader === playerId) ||
+              (phase === 'AMULET_CHECK' &&
+                lobbyState.amuletUsedOn === playerId) ||
+              (phase === 'THE_HUNT' &&
+                lobbyState.hunted?.some((p) => p.playerId === playerId)) ||
+              (phase === 'GOODS_LAST_CHANCE' && pointed.includes(playerId))
+
+            return showRing ? 'ring-[6px] ring-gray-500' : ''
           }
 
           const angle = (360 / totalPlayers) * index - 90
@@ -525,7 +508,7 @@ export default function GamePage() {
                 <button
                   onClick={() =>
                     isLeader &&
-                    lobbyState.phase === 'TEAM_SELECTION' &&
+                    phase === 'TEAM_SELECTION' &&
                     assignToken(player.id)
                   } // Only leader can interact
                   className="absolute top-[88px] w-20 text-sm"
@@ -537,7 +520,7 @@ export default function GamePage() {
                     opacity: `${isPlayerClickable(player) ? '1' : '0.4'}`,
                     cursor: `${isPlayerClickable(player) ? '' : 'not-allowed'}`,
                   }}
-                  disabled={!isLeader || lobbyState.phase !== 'TEAM_SELECTION'}
+                  disabled={!isLeader || phase !== 'TEAM_SELECTION'}
                 >
                   {lobbyState.magicTokenHolder === player.id
                     ? 'Token Used'
@@ -545,7 +528,7 @@ export default function GamePage() {
                 </button>
               )}
               {/* </div> */}
-              {lobbyState.phase === 'LEADER_SELECTION' &&
+              {phase === 'LEADER_SELECTION' &&
                 currentRule.amulet &&
                 !lobbyState.veterans.includes(player.id) &&
                 !lobbyState.amuletHistory.some(
@@ -554,9 +537,7 @@ export default function GamePage() {
                   <button
                     onClick={() => isLeader && assignAmuletHolder(player.id)}
                     className={`absolute top-[88px] w-[90px] text-sm ${lobbyState.amuletHolder === player.id ? 'bg-purple-300' : 'bg-white'}`}
-                    disabled={
-                      !isLeader || lobbyState.phase !== 'LEADER_SELECTION'
-                    }
+                    disabled={!isLeader || phase !== 'LEADER_SELECTION'}
                   >
                     {lobbyState.amuletHolder === player.id
                       ? 'Amulet Given'
@@ -572,7 +553,7 @@ export default function GamePage() {
 
   // Component for playing questing cards
   const QuestResolution = () => {
-    if (lobbyState.phase !== 'QUEST_RESOLUTION') return null
+    if (phase !== 'QUEST_RESOLUTION') return null
 
     if (!lobbyState.currentTeam.includes(id)) {
       return <p>Waiting for questing team to return...</p>
@@ -629,7 +610,7 @@ export default function GamePage() {
   }
 
   const PhaseMessage = () => {
-    switch (lobbyState.phase) {
+    switch (phase) {
       case 'TEAM_SELECTION':
         return isLeader ? (
           <p>
@@ -762,23 +743,22 @@ export default function GamePage() {
         <PlayerList />
       </div>
       <div>
-        {isLeader && lobbyState.phase === 'TEAM_SELECTION' ? (
+        {isLeader && phase === 'TEAM_SELECTION' ? (
           <button className="bg-green-300" onClick={confirmTeam}>
             Confirm Team
           </button>
         ) : null}
-        {isLeader && lobbyState.phase === 'LEADER_SELECTION' ? (
+        {isLeader && phase === 'LEADER_SELECTION' ? (
           <button className="bg-green-300" onClick={confirmLeader}>
             Confirm Leader
           </button>
         ) : null}
-        {lobbyState.phase === 'AMULET_CHECK' &&
-        lobbyState.amuletHolder === id ? (
+        {phase === 'AMULET_CHECK' && lobbyState.amuletHolder === id ? (
           <button className="bg-green-300" onClick={confirmAmuletUsage}>
             Confirm Amulet
           </button>
         ) : null}
-        {lobbyState.phase === 'GOODS_LAST_CHANCE' &&
+        {phase === 'GOODS_LAST_CHANCE' &&
         me.role === 'Blind Hunter' &&
         lobbyState.discussionStartTime &&
         Date.now() < lobbyState.discussionStartTime + 305000 ? (
