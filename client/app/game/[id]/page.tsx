@@ -6,6 +6,7 @@ import { useRef, useEffect, useLayoutEffect, useState, RefObject } from 'react'
 import { useWebSocketContext } from '@/context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
 import { usePlayerContext } from '@/context/PlayerContext'
+import { useRemainingTime } from '@/hooks/useRemainingTime'
 
 import { Player } from '../../../../shared/types'
 import { QuestRules } from '../../../../server/game/ruleset'
@@ -22,7 +23,6 @@ export default function GamePage() {
   const [passQuest, setPassQuest] = useState<boolean | null>(null)
   const [isQuestCardSubmitted, setIsQuestCardSubmited] =
     useState<boolean>(false)
-  const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [pointed, setPointed] = useState<string[]>([])
 
   // Redirect if directly navigating
@@ -33,46 +33,6 @@ export default function GamePage() {
   }, [lobbyState, router])
 
   useEffect(() => resetState(), [lobbyState?.currentRound])
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout
-    const updateTime = () => {
-      if (!lobbyState?.discussionStartTime) return
-
-      const elapsed = Math.floor(
-        (Date.now() - lobbyState.discussionStartTime) / 1000,
-      )
-      const discussionTime = 20 // 5 minutes
-      const blindHunterChance = 10 // 10 seconds for Blind Hunter to opt into hunting
-
-      if (lobbyState.phase === 'THE_DISCUSSION') {
-        const timeLeft = discussionTime - elapsed
-        setRemainingTime(Math.max(0, timeLeft))
-
-        if (timeLeft <= 0) {
-          clearInterval(timer) // Stop ticking when the timer hits 0
-        }
-      }
-      if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
-        const timeLeft = discussionTime + blindHunterChance - elapsed
-        setRemainingTime(Math.max(0, timeLeft))
-
-        if (timeLeft <= 0) {
-          clearInterval(timer)
-        }
-      }
-    }
-
-    if (
-      lobbyState?.phase === 'THE_DISCUSSION' ||
-      lobbyState?.phase === 'GOODS_LAST_CHANCE'
-    ) {
-      updateTime()
-      timer = setInterval(updateTime, 1000)
-    }
-
-    return () => clearInterval(timer)
-  }, [lobbyState?.phase, lobbyState?.discussionStartTime])
 
   const resetState = () => {
     setSelectedPlayers([])
@@ -120,6 +80,19 @@ export default function GamePage() {
     'Minion of Mordred',
     'Blind Hunter',
   ].includes(me.role ?? '')
+
+  const discussionTime = 20 // 5 minutes
+  const blindHunterTime = 10 // 10 seconds for Blind Hunter to opt into hunting
+  let totalSeconds = 0
+  if (lobbyState.phase === 'THE_DISCUSSION') {
+    totalSeconds = discussionTime
+  } else if (lobbyState.phase === 'GOODS_LAST_CHANCE') {
+    totalSeconds = discussionTime + blindHunterTime
+  }
+  const remainingTime = useRemainingTime(
+    lobbyState.discussionStartTime,
+    totalSeconds,
+  )
 
   function rotatePlayers(players: Player[], id: string): Player[] {
     const index = R.pipe(
@@ -717,7 +690,7 @@ export default function GamePage() {
         remainingTime > 0 &&
         me.role === 'Blind Hunter' && (
           <p>
-            You may choose to begin the Hunt. If so, you must identify the
+            You may choose to begin the Hunt. If so, you must identify the{' '}
             <span className="text-blue-500">Cleric</span> and one other{' '}
             <span className="text-blue-500">good</span> player's role. You have{' '}
             {remainingTime} second(s) to decide.
