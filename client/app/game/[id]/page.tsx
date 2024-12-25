@@ -302,16 +302,20 @@ export default function GamePage() {
     const hunted = lobbyState.hunted
     let updatedHunt
     if (!hunted.some((p) => p.playerId === playerId) && hunted.length < 2) {
-      updatedHunt = hunted.push({ playerId })
+      updatedHunt = [...hunted, { playerId }]
     } else if (hunted.some((p) => p.playerId === playerId)) {
-      updatedHunt = hunted.filter((p) => p.playerId === playerId)
+      updatedHunt = hunted.filter((p) => p.playerId !== playerId)
+    } else {
+      return hunted
     }
 
     sendMessage({
       event: 'UPDATE_HUNTED',
       lobbyId,
-      updatedHunt,
+      hunted: updatedHunt,
     })
+
+    return updatedHunt
   }
 
   const updatePointed = (playerId: string) => {
@@ -382,6 +386,10 @@ export default function GamePage() {
   const confirmHunted = () => {
     if (lobbyState.hunted.length !== 2) {
       alert(`Please select exactly two players to hunt.`)
+      return
+    }
+    if (lobbyState.hunted.some((p) => !p.role)) {
+      alert(`Please select roles for all hunted players.`)
       return
     }
     if (!lobbyState.hunted.some((p) => p.role === 'Cleric')) {
@@ -801,11 +809,25 @@ export default function GamePage() {
         {phase === 'GOODS_LAST_CHANCE' &&
         me.role === 'Blind Hunter' &&
         lobbyState.discussionStartTime &&
-        Date.now() < lobbyState.discussionStartTime + 305000 ? (
+        Date.now() <
+          lobbyState.discussionStartTime + discussionTime + blindHunterTime ? (
           <button className="bg-green-300" onClick={startTheHunt}>
             Begin the Hunt
           </button>
         ) : null}
+        {phase === 'THE_HUNT' && me.role === 'Blind Hunter' && (
+          <div>
+            {lobbyState.hunted[0] && (
+              <p>{getPlayerFromId(lobbyState.hunted[0].playerId)?.name}</p>
+            )}
+            {lobbyState.hunted[1] && (
+              <p>{getPlayerFromId(lobbyState.hunted[1].playerId)?.name}</p>
+            )}
+            <button className="bg-green-300" onClick={startTheHunt}>
+              Confirm the Hunt
+            </button>
+          </div>
+        )}
       </div>
 
       <QuestResolution />

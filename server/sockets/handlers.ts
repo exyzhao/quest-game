@@ -635,7 +635,7 @@ export const handleHuntStarted = (
 ) => {
   const { lobbyId } = message
   const lobby = lobbies[lobbyId]
-  lobby.phase === 'THE_HUNT'
+  lobby.phase = 'THE_HUNT'
   broadcastToLobby(wss, lobbyId, {
     event: GAME_STATE_UPDATE,
     state: lobby,
@@ -653,7 +653,10 @@ export const handleUpdateHunted = (
   const { lobbyId, hunted } = message
   const lobby = lobbies[lobbyId]
   try {
-    // updateTeam(lobby, selectedPlayers, magicTokenHolder)
+    if (hunted.length > 2) {
+      throw new Error('Too many players selected for the Hunt.')
+    }
+    lobby.hunted = hunted
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,
       state: lobby,
@@ -671,7 +674,18 @@ export const handleConfirmHunted = (
   const { lobbyId } = message
   const lobby = lobbies[lobbyId]
   try {
-    // confirmTeam(lobby)
+    if (lobby.hunted.length !== 2) {
+      throw new Error('Must select exactly two players for the Hunt.')
+    }
+    if (lobby.hunted.some((p) => !p.role)) {
+      throw new Error('At least one role not selected.')
+    }
+    if (!lobby.hunted.some((p) => p.role === 'Cleric')) {
+      throw new Error('Cleric not selected.')
+    }
+    if (!lobby.hunted.some((p) => p.role !== 'Cleric')) {
+      throw new Error('No non-Cleric role selected.')
+    }
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,
       state: lobby,
