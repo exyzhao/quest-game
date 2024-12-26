@@ -72,7 +72,7 @@ export default function GamePage() {
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound,
   )
-  const { phase } = lobbyState
+  const { phase, hunted } = lobbyState
 
   if (!me || !me.role || !currentLeader || !currentRule) {
     return <p>TODO ERROR2</p>
@@ -301,7 +301,6 @@ export default function GamePage() {
   const updateHunted = (playerId: string) => {
     if (me.role !== 'Blind Hunter') return
 
-    const hunted = lobbyState.hunted
     let updatedHunt
     if (!hunted.some((p) => p.playerId === playerId) && hunted.length < 2) {
       updatedHunt = [...hunted, { playerId, role: null }]
@@ -323,7 +322,6 @@ export default function GamePage() {
   const updateHuntedRole = (playerId: string, role: string | null) => {
     if (me.role !== 'Blind Hunter') return
 
-    const hunted = lobbyState.hunted
     const huntedPlayer = hunted.find((p) => p.playerId === playerId)
 
     if (!huntedPlayer) {
@@ -411,22 +409,6 @@ export default function GamePage() {
   }
 
   const confirmHunted = () => {
-    if (lobbyState.hunted.length !== 2) {
-      alert(`Please select exactly two players to hunt.`)
-      return
-    }
-    if (lobbyState.hunted.some((p) => !p.role)) {
-      alert(`Please select roles for all hunted players.`)
-      return
-    }
-    if (!lobbyState.hunted.some((p) => p.role === 'Cleric')) {
-      alert(`Please select the Cleric.`)
-      return
-    }
-    if (!lobbyState.hunted.some((p) => p.role !== 'Cleric')) {
-      alert(`Please select the a good role other than the Cleric.`)
-      return
-    }
     sendMessage({
       event: 'CONFIRM_HUNTED',
       lobbyId,
@@ -525,7 +507,7 @@ export default function GamePage() {
               (phase === 'AMULET_CHECK' &&
                 lobbyState.amuletUsedOn === playerId) ||
               (phase === 'THE_HUNT' &&
-                lobbyState.hunted?.some((p) => p.playerId === playerId)) ||
+                hunted?.some((p) => p.playerId === playerId)) ||
               (phase === 'GOODS_LAST_CHANCE' && pointed.includes(playerId))
 
             return showRing ? 'ring-[6px] ring-gray-500' : ''
@@ -846,22 +828,18 @@ export default function GamePage() {
         ) : null}
         {phase === 'THE_HUNT' && me.role === 'Blind Hunter' && (
           <div className="flex flex-col gap-4">
-            {lobbyState.hunted[0] && (
+            {hunted[0] && (
               <div>
-                <p>{getPlayerFromId(lobbyState.hunted[0].playerId)?.name}</p>
+                <p>{getPlayerFromId(hunted[0].playerId)?.name}</p>
                 <div className="flex gap-1">
                   {lobbyState.possibleRoles
                     ?.filter((role) => isRoleGood(role))
                     .map((role) => (
                       <button
                         key={role}
-                        className={
-                          lobbyState.hunted[0].role === role
-                            ? 'bg-blue-300'
-                            : ''
-                        }
+                        className={hunted[0].role === role ? 'bg-blue-300' : ''}
                         onClick={() =>
-                          updateHuntedRole(lobbyState.hunted[0].playerId, role)
+                          updateHuntedRole(hunted[0].playerId, role)
                         }
                       >
                         {role}
@@ -870,22 +848,18 @@ export default function GamePage() {
                 </div>
               </div>
             )}
-            {lobbyState.hunted[1] && (
+            {hunted[1] && (
               <div>
-                <p>{getPlayerFromId(lobbyState.hunted[1].playerId)?.name}</p>
+                <p>{getPlayerFromId(hunted[1].playerId)?.name}</p>
                 <div className="flex gap-1">
                   {lobbyState.possibleRoles
                     ?.filter((role) => isRoleGood(role))
                     .map((role) => (
                       <button
                         key={role}
-                        className={
-                          lobbyState.hunted[1].role === role
-                            ? 'bg-blue-300'
-                            : ''
-                        }
+                        className={hunted[1].role === role ? 'bg-blue-300' : ''}
                         onClick={() =>
-                          updateHuntedRole(lobbyState.hunted[1].playerId, role)
+                          updateHuntedRole(hunted[1].playerId, role)
                         }
                       >
                         {role}
@@ -894,9 +868,14 @@ export default function GamePage() {
                 </div>
               </div>
             )}
-            <button className="bg-green-300" onClick={startTheHunt}>
-              Confirm the Hunt
-            </button>
+            {hunted.length === 2 &&
+              hunted.every((p) => p.role) &&
+              lobbyState.hunted.some((p) => p.role === 'Cleric') &&
+              lobbyState.hunted.some((p) => p.role !== 'Cleric') && (
+                <button className="bg-green-300" onClick={confirmHunted}>
+                  Confirm the Hunt
+                </button>
+              )}
           </div>
         )}
       </div>

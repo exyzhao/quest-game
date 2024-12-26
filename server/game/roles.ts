@@ -9,78 +9,146 @@ export const getRolesForPlayerCount = (
   playerCount: number,
   showAllPossibleRoles: boolean,
 ): string[] => {
-  if (playerCount === 4) {
-    const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
-    const evilRoles = ['Morgan le Fey', 'Blind Hunter']
-    if (showAllPossibleRoles) {
-      return goodRoles.concat(evilRoles)
+  switch (playerCount) {
+    case 4: {
+      const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
+      const evilRoles = ['Morgan le Fey', 'Blind Hunter']
+      if (showAllPossibleRoles) {
+        return goodRoles.concat(evilRoles)
+      }
+      const selectedGoodRoles = R.shuffle(goodRoles).slice(0, 2)
+      return selectedGoodRoles.concat(evilRoles)
     }
-    const selectedGoodRoles = R.shuffle(goodRoles).slice(0, 2)
-    return selectedGoodRoles.concat(evilRoles)
-  } else if (playerCount === 5) {
-    const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
-    const evilRoles = ['Morgan le Fey', 'Blind Hunter', 'Minion of Mordred']
-    if (showAllPossibleRoles) {
-      return goodRoles.concat(evilRoles)
+    case 5: {
+      const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
+      const evilRoles = ['Morgan le Fey', 'Blind Hunter', 'Minion of Mordred']
+      if (showAllPossibleRoles) {
+        return goodRoles.concat(evilRoles)
+      }
+      const selectedGoodRoles = R.shuffle(goodRoles).slice(0, 2)
+      return selectedGoodRoles.concat(evilRoles)
     }
-    const selectedGoodRoles = R.shuffle(goodRoles).slice(0, 2)
-    return selectedGoodRoles.concat(evilRoles)
-  } else if (playerCount === 6) {
-    return [
-      'Morgan le Fey',
-      'Blind Hunter',
-      'Minion of Mordred',
-      'Cleric',
-      'Special Role',
-      'Duke',
-    ]
-  } else if (playerCount === 7) {
-    return [
-      'Morgan le Fey',
-      'Blind Hunter',
-      'Minion of Mordred',
-      'Minion of Mordred',
-      'Cleric',
-      'Special Role',
-      'Duke',
-    ]
-  } else if (playerCount === 8) {
-    return [
-      'Morgan le Fey',
-      'Blind Hunter',
-      'Minion of Mordred',
-      'Minion of Mordred',
-      'Cleric',
-      'Special Role',
-      'Duke',
-      'Loyal Servant of Arthur',
-    ]
-  } else if (playerCount === 9) {
-    return [
-      'Morgan le Fey',
-      'Blind Hunter',
-      'Minion of Mordred',
-      'Minion of Mordred',
-      'Minion of Mordred',
-      'Cleric',
-      'Special Role',
-      'Archduke',
-      'Loyal Servant of Arthur',
-    ]
-  } else if (playerCount === 10) {
-    return [
-      'Morgan le Fey',
-      'Blind Hunter',
-      'Minion of Mordred',
-      'Minion of Mordred',
-      'Minion of Mordred',
-      'Cleric',
-      'Special Role',
-      'Duke',
-      'Archduke',
-      'Loyal Servant of Arthur',
-    ]
-  } else {
-    throw new Error('Unsupported number of players')
+    case 6:
+      if (showAllPossibleRoles) {
+        return [
+          'Morgan le Fey',
+          'Blind Hunter',
+          'Minion of Mordred',
+          'Cleric',
+          'Youth',
+          'Troublemaker',
+          'Duke',
+        ]
+      }
+      return [
+        'Morgan le Fey',
+        'Blind Hunter',
+        'Minion of Mordred',
+        'Cleric',
+        'Special Role',
+        'Duke',
+      ]
+    case 7:
+      if (showAllPossibleRoles) {
+        return [
+          'Morgan le Fey',
+          'Blind Hunter',
+          'Minion of Mordred',
+          'Minion of Mordred',
+          'Cleric',
+          'Youth',
+          'Troublemaker',
+          'Duke',
+        ]
+      }
+      return [
+        'Morgan le Fey',
+        'Blind Hunter',
+        'Minion of Mordred',
+        'Minion of Mordred',
+        'Cleric',
+        'Special Role',
+        'Duke',
+      ]
+    case 8:
+      if (showAllPossibleRoles) {
+        ;[
+          'Morgan le Fey',
+          'Blind Hunter',
+          'Minion of Mordred',
+          'Minion of Mordred',
+          'Cleric',
+          'Youth',
+          'Troublemaker',
+          'Duke',
+          'Loyal Servant of Arthur',
+        ]
+      }
+      return [
+        'Morgan le Fey',
+        'Blind Hunter',
+        'Minion of Mordred',
+        'Minion of Mordred',
+        'Cleric',
+        'Special Role',
+        'Duke',
+        'Loyal Servant of Arthur',
+      ]
+    case 9:
+      if (showAllPossibleRoles) {
+        ;[
+          'Morgan le Fey',
+          'Blind Hunter',
+          'Minion of Mordred',
+          'Minion of Mordred',
+          'Minion of Mordred',
+          'Cleric',
+          'Youth',
+          'Troublemaker',
+          'Archduke',
+          'Loyal Servant of Arthur',
+        ]
+      }
+      return [
+        'Morgan le Fey',
+        'Blind Hunter',
+        'Minion of Mordred',
+        'Minion of Mordred',
+        'Minion of Mordred',
+        'Cleric',
+        'Special Role',
+        'Archduke',
+        'Loyal Servant of Arthur',
+      ]
+    case 10:
+      if (showAllPossibleRoles) {
+        ;[
+          'Morgan le Fey',
+          'Blind Hunter',
+          'Minion of Mordred',
+          'Minion of Mordred',
+          'Minion of Mordred',
+          'Cleric',
+          'Youth',
+          'Troublemaker',
+          'Duke',
+          'Archduke',
+          'Loyal Servant of Arthur',
+        ]
+      }
+      return [
+        'Morgan le Fey',
+        'Blind Hunter',
+        'Minion of Mordred',
+        'Minion of Mordred',
+        'Minion of Mordred',
+        'Cleric',
+        'Special Role',
+        'Duke',
+        'Archduke',
+        'Loyal Servant of Arthur',
+      ]
+    default:
+      throw new Error('Unsupported number of players')
   }
 }
