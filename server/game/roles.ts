@@ -5,22 +5,26 @@ export const isPlayerEvil = (role: string): boolean => {
   return evilRoles.includes(role)
 }
 
-export const getRolesForPlayerCount = (playerCount: number): string[] => {
+export const getRolesForPlayerCount = (
+  playerCount: number,
+  showAllPossibleRoles: boolean,
+): string[] => {
   if (playerCount === 4) {
     const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
+    const evilRoles = ['Morgan le Fey', 'Blind Hunter']
+    if (showAllPossibleRoles) {
+      return goodRoles.concat(evilRoles)
+    }
     const selectedGoodRoles = R.shuffle(goodRoles).slice(0, 2)
-    return ['Morgan le Fey', 'Blind Hunter', ...selectedGoodRoles]
+    return selectedGoodRoles.concat(evilRoles)
   } else if (playerCount === 5) {
     const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
+    const evilRoles = ['Morgan le Fey', 'Blind Hunter', 'Minion of Mordred']
+    if (showAllPossibleRoles) {
+      return goodRoles.concat(evilRoles)
+    }
     const selectedGoodRoles = R.shuffle(goodRoles).slice(0, 2)
-    return [
-      'Morgan le Fey',
-      'Blind Hunter',
-      'Minion of Mordred',
-      ...selectedGoodRoles,
-    ]
-  } else if (playerCount === 2) {
-    return ['Morgan le Fey', 'Cleric']
+    return selectedGoodRoles.concat(evilRoles)
   } else if (playerCount === 6) {
     return [
       'Morgan le Fey',

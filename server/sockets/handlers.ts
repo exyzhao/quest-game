@@ -67,6 +67,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     magicTokenHolder: null,
     questSubmissions: [],
     rules: getQuestRules(6),
+    possibleRoles: getRolesForPlayerCount(6, true),
     currentLeader: 'player-1',
     upcomingLeader: null,
     amuletHolder: null,
@@ -280,9 +281,10 @@ export const handleStartGame = (
   }
 
   lobby.rules = getQuestRules(lobby.players.length)
+  lobby.possibleRoles = getRolesForPlayerCount(lobby.players.length, true)
 
   try {
-    let roles = getRolesForPlayerCount(playerCount)
+    let roles = getRolesForPlayerCount(playerCount, false)
     roles = roles.map((role) =>
       role === 'Special Role'
         ? Math.random() < 0.5
@@ -646,7 +648,7 @@ export const handleUpdateHunted = (
   ws: MyWebSocket,
   message: {
     lobbyId: string
-    hunted: { playerId: string; role?: string }[]
+    hunted: { playerId: string; role: string | null }[]
   },
   wss: MyWebSocketServer,
 ) => {

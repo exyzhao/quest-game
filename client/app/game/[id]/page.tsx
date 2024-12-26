@@ -74,16 +74,18 @@ export default function GamePage() {
   )
   const { phase } = lobbyState
 
-  if (!me || !currentLeader || !currentRule) {
+  if (!me || !me.role || !currentLeader || !currentRule) {
     return <p>TODO ERROR2</p>
   }
   const isLeader = id === currentLeader?.id
 
-  const isGoodPlayer = ![
-    'Morgan le Fey',
-    'Minion of Mordred',
-    'Blind Hunter',
-  ].includes(me.role ?? '')
+  const isRoleGood = (role: string) => {
+    return !['Morgan le Fey', 'Minion of Mordred', 'Blind Hunter'].includes(
+      role,
+    )
+  }
+
+  const isGoodPlayer = isRoleGood(me.role)
 
   const discussionTime = 20 // 5 minutes
   const blindHunterTime = 10 // 10 seconds for Blind Hunter to opt into hunting
@@ -302,7 +304,7 @@ export default function GamePage() {
     const hunted = lobbyState.hunted
     let updatedHunt
     if (!hunted.some((p) => p.playerId === playerId) && hunted.length < 2) {
-      updatedHunt = [...hunted, { playerId }]
+      updatedHunt = [...hunted, { playerId, role: null }]
     } else if (hunted.some((p) => p.playerId === playerId)) {
       updatedHunt = hunted.filter((p) => p.playerId !== playerId)
     } else {
@@ -316,6 +318,31 @@ export default function GamePage() {
     })
 
     return updatedHunt
+  }
+
+  const updateHuntedRole = (playerId: string, role: string | null) => {
+    if (me.role !== 'Blind Hunter') return
+
+    const hunted = lobbyState.hunted
+    const huntedPlayer = hunted.find((p) => p.playerId === playerId)
+
+    if (!huntedPlayer) {
+      return
+    }
+
+    if (huntedPlayer?.role === role) {
+      huntedPlayer.role = null
+    } else {
+      huntedPlayer.role = role
+    }
+
+    sendMessage({
+      event: 'UPDATE_HUNTED',
+      lobbyId,
+      hunted,
+    })
+
+    return hunted
   }
 
   const updatePointed = (playerId: string) => {
@@ -810,18 +837,62 @@ export default function GamePage() {
         me.role === 'Blind Hunter' &&
         lobbyState.discussionStartTime &&
         Date.now() <
-          lobbyState.discussionStartTime + discussionTime + blindHunterTime ? (
+          lobbyState.discussionStartTime +
+            discussionTime * 1000 +
+            blindHunterTime * 1000 ? (
           <button className="bg-green-300" onClick={startTheHunt}>
             Begin the Hunt
           </button>
         ) : null}
         {phase === 'THE_HUNT' && me.role === 'Blind Hunter' && (
-          <div>
+          <div className="flex flex-col gap-4">
             {lobbyState.hunted[0] && (
-              <p>{getPlayerFromId(lobbyState.hunted[0].playerId)?.name}</p>
+              <div>
+                <p>{getPlayerFromId(lobbyState.hunted[0].playerId)?.name}</p>
+                <div className="flex gap-1">
+                  {lobbyState.possibleRoles
+                    ?.filter((role) => isRoleGood(role))
+                    .map((role) => (
+                      <button
+                        key={role}
+                        className={
+                          lobbyState.hunted[0].role === role
+                            ? 'bg-blue-300'
+                            : ''
+                        }
+                        onClick={() =>
+                          updateHuntedRole(lobbyState.hunted[0].playerId, role)
+                        }
+                      >
+                        {role}
+                      </button>
+                    ))}
+                </div>
+              </div>
             )}
             {lobbyState.hunted[1] && (
-              <p>{getPlayerFromId(lobbyState.hunted[1].playerId)?.name}</p>
+              <div>
+                <p>{getPlayerFromId(lobbyState.hunted[1].playerId)?.name}</p>
+                <div className="flex gap-1">
+                  {lobbyState.possibleRoles
+                    ?.filter((role) => isRoleGood(role))
+                    .map((role) => (
+                      <button
+                        key={role}
+                        className={
+                          lobbyState.hunted[1].role === role
+                            ? 'bg-blue-300'
+                            : ''
+                        }
+                        onClick={() =>
+                          updateHuntedRole(lobbyState.hunted[1].playerId, role)
+                        }
+                      >
+                        {role}
+                      </button>
+                    ))}
+                </div>
+              </div>
             )}
             <button className="bg-green-300" onClick={startTheHunt}>
               Confirm the Hunt
