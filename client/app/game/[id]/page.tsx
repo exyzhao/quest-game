@@ -11,7 +11,7 @@ import { useRemainingTime } from '@/client/hooks/useRemainingTime'
 
 import { Player, QuestResult } from '@/shared/types'
 import { QuestRules } from '@/server/game/ruleset'
-import { evilRoles, tokenableEvilRoles } from '@/shared/constants'
+import { EVIL_ROLES, TOKENABLE_EVIL_ROLES } from '@/shared/constants'
 
 export default function GamePage() {
   const { sendMessage, lobbyState } = useWebSocketContext()
@@ -81,7 +81,7 @@ export default function GamePage() {
   const isLeader = id === currentLeader?.id
 
   const isRoleGood = (role: string) => {
-    return !evilRoles.includes(role)
+    return !EVIL_ROLES.includes(role)
   }
 
   const isGoodPlayer = isRoleGood(me.role)
@@ -183,7 +183,7 @@ export default function GamePage() {
       return 'gray-100'
     }
     if (playerId === id) {
-      if (evilRoles.includes(role)) {
+      if (EVIL_ROLES.includes(role)) {
         return red
       } else {
         return blue
@@ -647,7 +647,7 @@ export default function GamePage() {
       me.role === 'Youth' && lobbyState.magicTokenHolder === id
 
     const isEvilTokened =
-      tokenableEvilRoles.includes(me.role) && lobbyState.magicTokenHolder === id
+      TOKENABLE_EVIL_ROLES.includes(me.role) && lobbyState.magicTokenHolder === id
 
     const canFail = (!isGoodPlayer && !isEvilTokened) || isYouthTokened
 

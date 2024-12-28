@@ -1,4 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws'
+import { MyWebSocket, MyWebSocketServer } from '@/shared/types'
 import {
   JOIN_GAME,
   START_GAME,
@@ -24,16 +25,6 @@ import {
   handleConfirmHunted,
 } from './handlers'
 import { IncomingMessage } from 'http'
-
-// TODO: Find a place to put these reused types
-interface MyWebSocket extends WebSocket {
-  lobbyId?: string
-  playerId?: string
-}
-
-interface MyWebSocketServer extends WebSocketServer {
-  clients: Set<MyWebSocket>
-}
 
 export const initWebSockets = (server: import('http').Server) => {
   const wss = new WebSocketServer({ server }) as MyWebSocketServer

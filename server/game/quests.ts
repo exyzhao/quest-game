@@ -1,8 +1,7 @@
-import { Lobby, MyWebSocketServer, QuestResult } from '../../shared/types'
+import { Lobby } from '../../shared/types'
 import { getQuestRules } from './ruleset'
-import { isPlayerEvil } from './roles'
 import { advancePhase } from './stateMachine'
-import { showsAsEvilRoles } from '@/shared/constants'
+import { SHOWS_AS_EVIL_ROLES } from '@/shared/constants'
 
 /**
  * Updates a team for the quest.
@@ -15,8 +14,9 @@ export const updateTeam = (
   selectedPlayerIds: string[],
   magicTokenHolder: string | null,
 ) => {
-  // TODO: pull rules from lobby
-  const rules = getQuestRules(lobby.players.length)
+  // TODO: pull rules from lobby or constants?
+  const rules = lobby.rules
+  if (!rules) throw new Error('No ruleset found.')
   const currentQuest = rules.find((r) => r.round === lobby.currentRound)
   if (!currentQuest) throw new Error('Invalid quest round.')
 
@@ -37,7 +37,8 @@ export const updateTeam = (
  * @param magicTokenHolder The ID of the player to whom the magic token is assigned
  */
 export const confirmTeam = (lobby: Lobby) => {
-  const rules = getQuestRules(lobby.players.length)
+  const rules = lobby.rules
+  if (!rules) throw new Error('No ruleset found.')
   const currentQuest = rules.find((r) => r.round === lobby.currentRound)
   if (!currentQuest) throw new Error('Invalid quest round.')
 
@@ -133,7 +134,7 @@ export const confirmAmuletUsage = (lobby: Lobby) => {
     throw new Error(`${lobby.amuletUsedOn} has no role.`)
   }
 
-  const showsAsGood = !showsAsEvilRoles.includes(playerBeingChecked.role)
+  const showsAsGood = !SHOWS_AS_EVIL_ROLES.includes(playerBeingChecked.role)
 
   lobby.amuletHistory.push({
     amuletHolder: lobby.amuletHolder,

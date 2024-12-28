@@ -2,7 +2,7 @@
   "name": "server",
   "private": true,
   "scripts": {
-    "dev": "ts-node index.ts",
-    "start": "ts-node index.ts"
+    "dev": "ts-node -r tsconfig-paths/register index.ts",
+    "start": "ts-node -r tsconfig-paths/register index.ts"
   }
 }

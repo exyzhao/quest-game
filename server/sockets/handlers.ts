@@ -13,7 +13,7 @@ import {
   confirmAmuletUsage,
 } from '../game/quests'
 import { getQuestRules } from '../game/ruleset'
-import { knownEvilRoles } from '@/shared/constants'
+import { KNOWN_EVIL_ROLES } from '@/shared/constants'
 
 export const LOBBIES: Record<string, Lobby> = {}
 
@@ -188,7 +188,7 @@ export const handleJoinGame = (
   }
   if (
     reconnectingPlayer.role &&
-    knownEvilRoles.includes(reconnectingPlayer.role) &&
+    KNOWN_EVIL_ROLES.includes(reconnectingPlayer.role) &&
     lobby.knownEvils
   ) {
     sendPrivateMessage(wss, reconnectingPlayer.id, {
@@ -353,7 +353,7 @@ export const handleStartGame = (
 
     // Notify evils (except Blind Hunter) about each other
     const evils = lobby.players.filter(
-      (p) => p.role && knownEvilRoles.includes(p.role),
+      (p) => p.role && KNOWN_EVIL_ROLES.includes(p.role),
     )
     if (evils.length > 0) {
       const evilIds = evils.map((e) => e.id)

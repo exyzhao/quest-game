@@ -1,9 +1,8 @@
 import * as R from 'remeda'
-import { evilRoles } from '@/shared/constants'
+import { EVIL_ROLES } from '@/shared/constants'
 
 export const isPlayerEvil = (role: string): boolean => {
-  const evilRoles = ['Morgan le Fey', 'Blind Hunter', 'Minion of Mordred']
-  return evilRoles.includes(role)
+  return EVIL_ROLES.includes(role)
 }
 
 export const getRolesForPlayerCount = (
