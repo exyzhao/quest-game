@@ -20,6 +20,7 @@ export interface Player {
 
 export interface Lobby {
   lobbyId: string
+  lastActivity: number
   phase: GamePhase
   players: Player[]
   disconnectedPlayers: Player[] // Track players who disconnected during the game

@@ -16,13 +16,14 @@ import { getQuestRules } from '../game/ruleset'
 // import { knownEvilRoles } from '../../shared/constants' TODO
 export const knownEvilRoles = ['Morgan le Fey', 'Minion of Mordred']
 
-const lobbies: Record<string, Lobby> = {}
+export const LOBBIES: Record<string, Lobby> = {}
 
 export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
   // TEAM SELECTION
   const lobbyId = '1234'
-  lobbies[lobbyId] = {
+  LOBBIES[lobbyId] = {
     lobbyId,
+    lastActivity: Date.now(),
     phase: 'TEAM_SELECTION',
     players: [
       { id: 'player-1', name: 'q', role: 'Morgan le Fey' },
@@ -80,7 +81,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
       isGood: false,
     },
   }
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
 
   console.log('Debug state applied to lobby.')
   console.log(lobby)
@@ -108,9 +109,10 @@ export const handleJoinGame = (
   }
 
   // If lobby doesn't exist, create it
-  if (!lobbies[lobbyId]) {
-    lobbies[lobbyId] = {
+  if (!LOBBIES[lobbyId]) {
+    LOBBIES[lobbyId] = {
       lobbyId: lobbyId,
+      lastActivity: Date.now(),
       phase: 'LOBBY',
       players: [],
       disconnectedPlayers: [],
@@ -130,7 +132,7 @@ export const handleJoinGame = (
     }
   }
 
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
 
   if (lobby.phase === 'LOBBY') {
     if (lobby.players.find((player) => player.name === playerName)) {
@@ -221,7 +223,7 @@ export const handleDisconnection = (
   const { lobbyId, playerId } = ws
   if (!lobbyId || !playerId) return
 
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
   if (!lobby) return
 
   const player = lobby.players.find((p) => p.id === playerId)
@@ -259,10 +261,11 @@ export const handleStartGame = (
     return
   }
 
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
   if (!lobby) {
     ws.send(JSON.stringify({ event: 'ERROR', error: 'Lobby not found' }))
   }
+  updateLobbyLastActivity(lobby)
 
   if (lobby.phase !== 'LOBBY') {
     ws.send(JSON.stringify({ event: 'ERROR', error: 'Game already started' }))
@@ -384,7 +387,8 @@ export const handleUpdateTeam = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId, selectedPlayers, magicTokenHolder } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
   try {
     updateTeam(lobby, selectedPlayers, magicTokenHolder)
     broadcastToLobby(wss, lobbyId, {
@@ -402,7 +406,8 @@ export const handleConfirmTeam = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
   try {
     confirmTeam(lobby)
     broadcastToLobby(wss, lobbyId, {
@@ -420,7 +425,8 @@ export const handleSubmitQuest = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId, playerId, isQuestCardPass } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
   try {
     if (!lobby) {
       ws.send(JSON.stringify({ event: 'ERROR', error: 'Lobby not found.' }))
@@ -531,7 +537,8 @@ export const handleUpdateLeader = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId, updatedLeader } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
   try {
     updateLeader(lobby, updatedLeader)
     broadcastToLobby(wss, lobbyId, {
@@ -552,7 +559,8 @@ export const handleUpdateAmuletHolder = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId, updatedAmuletHolder } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
   try {
     updateAmuletHolder(lobby, updatedAmuletHolder)
     broadcastToLobby(wss, lobbyId, {
@@ -573,7 +581,8 @@ export const handleUpdateAmuletUsage = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId, updatedAmuletUsage } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
   try {
     updateAmuletUsage(lobby, updatedAmuletUsage)
     broadcastToLobby(wss, lobbyId, {
@@ -591,7 +600,9 @@ export const handleConfirmLeader = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
+
   confirmLeader(lobby)
   broadcastToLobby(wss, lobbyId, {
     event: GAME_STATE_UPDATE,
@@ -605,7 +616,8 @@ export const handleConfirmAmuletUsage = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
 
   confirmAmuletUsage(lobby)
   broadcastToLobby(wss, lobbyId, {
@@ -636,7 +648,9 @@ export const handleHuntStarted = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
+
   lobby.phase = 'THE_HUNT'
   broadcastToLobby(wss, lobbyId, {
     event: GAME_STATE_UPDATE,
@@ -653,7 +667,8 @@ export const handleUpdateHunted = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId, hunted } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
   try {
     if (hunted.length > 2) {
       throw new Error('Too many players selected for the Hunt.')
@@ -674,7 +689,8 @@ export const handleConfirmHunted = (
   wss: MyWebSocketServer,
 ) => {
   const { lobbyId } = message
-  const lobby = lobbies[lobbyId]
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
   try {
     if (lobby.hunted.length !== 2) {
       throw new Error('Must select exactly two players for the Hunt.')
@@ -695,6 +711,34 @@ export const handleConfirmHunted = (
     })
   } catch (e) {
     ws.send(JSON.stringify({ event: 'ERROR', error: (e as Error).message }))
+  }
+}
+
+export const resetLobby = (
+  ws: MyWebSocket,
+  message: { lobbyId: string },
+  wss: MyWebSocketServer,
+) => {
+  const { lobbyId } = message
+  LOBBIES[lobbyId] = {
+    lobbyId: lobbyId,
+    lastActivity: Date.now(),
+    phase: 'LOBBY',
+    players: [],
+    disconnectedPlayers: [],
+    veterans: [],
+    amuletHistory: [],
+    questHistory: [],
+    currentLeader: null,
+    upcomingLeader: null,
+    amuletHolder: null,
+    amuletUsedOn: null,
+    currentRound: 0,
+    currentTeam: [],
+    magicTokenHolder: null,
+    questSubmissions: [],
+    discussionStartTime: null,
+    hunted: [],
   }
 }
 
@@ -724,4 +768,29 @@ const sendPrivateMessage = (
       client.send(payload)
     }
   })
+}
+
+/**
+ * This updates the last activity timestamp of a lobby.
+ * We delete lobbies after 90 mins of inactivity, so we should call this any time we process an event.
+ *
+ * @param lobby
+ */
+
+const updateLobbyLastActivity = (lobby: Lobby) => {
+  lobby.lastActivity = Date.now()
+}
+
+export function removeStaleLobbies(
+  LOBBIES: Record<string, Lobby>,
+  timeout: number,
+) {
+  const now = Date.now()
+  for (const lobbyId in LOBBIES) {
+    const lobby = LOBBIES[lobbyId]
+    if (lobby.lastActivity && now - lobby.lastActivity > timeout) {
+      console.log(`Deleting lobby ${lobbyId} due to inactivity.`)
+      delete LOBBIES[lobbyId]
+    }
+  }
 }
