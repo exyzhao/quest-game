@@ -3,10 +3,11 @@
 import * as R from 'remeda'
 
 import { useRef, useEffect, useLayoutEffect, useState, RefObject } from 'react'
-import { useWebSocketContext } from '@/context/WebSocketContext'
+import { useWebSocketContext } from '@/client/context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
-import { usePlayerContext } from '@/context/PlayerContext'
-import { useRemainingTime } from '@/hooks/useRemainingTime'
+import { usePlayerContext } from '@/client/context/PlayerContext'
+import { useRemainingTime } from '@/client/hooks/useRemainingTime'
+import Image from 'next/image'
 
 import { Player, QuestResult } from '../../../../shared/types'
 import { QuestRules } from '../../../../server/game/ruleset'
@@ -563,15 +564,23 @@ export default function GamePage() {
                 {player.name}
                 {player.id === id ? ' (You)' : ''}
               </p>
-              <img
-                src={`https://api.dicebear.com/9.x/dylan/svg?seed=${player.name}&scale=80&backgroundColor=29e051,619eff,ffa6e6,7074ff,58bffd,967aff,6b80ff,39e8c8,fe9cfa,ffb5cf,ffb0d5,63cb24,3cd623,2ce169,ffabdd,fea1ef,51d023,ffbfc7`}
+              <Image
+                src={`https://api.dicebear.com/9.x/dylan/svg?seed=${encodeURIComponent(
+                  player.name,
+                )}&scale=80&backgroundColor=29e051,619eff,ffa6e6,7074ff,58bffd,967aff,6b80ff,39e8c8,fe9cfa,ffb5cf,ffb0d5,63cb24,3cd623,2ce169,ffabdd,fea1ef,51d023,ffbfc7`}
                 alt={`Avatar of ${player.name}`}
-                className={`h-16 w-16 rounded-full ${ringColor(player.id)} cursor-pointer`}
+                width={64}
+                height={64}
+                className={`rounded-full ${ringColor(player.id)}`}
                 style={{
-                  opacity: `${isPlayerClickable(player) ? '1' : '0.4'}`,
-                  cursor: `${isPlayerClickable(player) ? '' : 'not-allowed'}`,
+                  opacity: isPlayerClickable(player) ? '1' : '0.4',
+                  cursor: isPlayerClickable(player) ? 'pointer' : 'not-allowed',
                 }}
-                onClick={() => handlePlayerClick(player)}
+                onClick={() => {
+                  if (isPlayerClickable(player)) {
+                    handlePlayerClick(player)
+                  }
+                }}
               />
               {lobbyState.currentTeam.includes(player.id) && (
                 <button

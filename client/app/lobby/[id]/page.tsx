@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useWebSocketContext } from '../../../context/WebSocketContext'
+import { useWebSocketContext } from '@/client/context/WebSocketContext'
 import { useRouter, usePathname } from 'next/navigation'
 
 export default function Lobby() {

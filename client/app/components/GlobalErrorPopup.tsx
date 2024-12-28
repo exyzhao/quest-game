@@ -1,6 +1,6 @@
 'use client'
 
-import { useWebSocketContext } from '@/context/WebSocketContext'
+import { useWebSocketContext } from '@/client/context/WebSocketContext'
 
 export default function GlobalErrorPopup() {
   const { errorMessage, clearError } = useWebSocketContext()

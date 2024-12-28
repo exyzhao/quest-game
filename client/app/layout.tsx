@@ -1,7 +1,7 @@
 import './global.css'
 import { Crimson_Text } from 'next/font/google'
 import { WebSocketProvider } from '../context/WebSocketContext'
-import { PlayerProvider } from '@/context/PlayerContext'
+import { PlayerProvider } from '@/client/context/PlayerContext'
 import GlobalErrorPopup from './components/GlobalErrorPopup'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
