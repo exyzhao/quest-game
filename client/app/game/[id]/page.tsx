@@ -445,7 +445,14 @@ export default function GamePage() {
     ) {
       updateHunted(player.id)
     }
-    if (phase === 'GOODS_LAST_CHANCE') {
+    if (
+      phase === 'GOODS_LAST_CHANCE' &&
+      lobbyState.discussionStartTime &&
+      Date.now() >
+        lobbyState.discussionStartTime +
+          discussionTime * 1000 +
+          blindHunterTime * 1000
+    ) {
       updatePointed(player.id)
     }
   }
@@ -480,7 +487,14 @@ export default function GamePage() {
     ) {
       return true
     }
-    if (phase === 'GOODS_LAST_CHANCE') {
+    if (
+      phase === 'GOODS_LAST_CHANCE' &&
+      lobbyState.discussionStartTime &&
+      Date.now() >
+        lobbyState.discussionStartTime +
+          discussionTime * 1000 +
+          blindHunterTime * 1000
+    ) {
       return true
     }
     return false
@@ -598,6 +612,14 @@ export default function GamePage() {
                       ? 'Amulet Given'
                       : 'Give Amulet'}
                   </button>
+                )}
+              {(phase === 'GOOD_VICTORY' || phase === 'EVIL_VICTORY') &&
+                player.role && (
+                  <div
+                    className={`absolute top-[88px] w-[90px] rounded-[4px] text-sm ${isRoleGood(player.role) ? 'bg-blue-300' : 'bg-red-300'}`}
+                  >
+                    {player.role}
+                  </div>
                 )}
             </div>
           )
@@ -777,6 +799,10 @@ export default function GamePage() {
             to complete the hunt...
           </p>
         )
+      case 'GOOD_VICTORY':
+        return <p>Good has prevailed!</p>
+      case 'EVIL_VICTORY':
+        return <p>Evil has prevailed!</p>
     }
   }
 

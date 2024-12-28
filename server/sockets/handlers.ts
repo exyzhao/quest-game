@@ -688,6 +688,7 @@ export const handleConfirmHunted = (
     if (!lobby.hunted.some((p) => p.role !== 'Cleric')) {
       throw new Error('No non-Cleric role selected.')
     }
+    advancePhase(lobby)
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,
       state: lobby,
