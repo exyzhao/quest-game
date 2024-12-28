@@ -13,8 +13,7 @@ import {
   confirmAmuletUsage,
 } from '../game/quests'
 import { getQuestRules } from '../game/ruleset'
-// import { knownEvilRoles } from '../../shared/constants' TODO
-export const knownEvilRoles = ['Morgan le Fey', 'Minion of Mordred']
+import { knownEvilRoles } from '@/shared/constants'
 
 export const LOBBIES: Record<string, Lobby> = {}
 

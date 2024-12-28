@@ -1,17 +1,17 @@
 'use client'
 
 import * as R from 'remeda'
-
 import { useRef, useEffect, useLayoutEffect, useState, RefObject } from 'react'
-import { useWebSocketContext } from '@/client/context/WebSocketContext'
 import { usePathname, useRouter } from 'next/navigation'
-import { usePlayerContext } from '@/client/context/PlayerContext'
-import { useRemainingTime } from '@/client/hooks/useRemainingTime'
 import Image from 'next/image'
 
-import { Player, QuestResult } from '../../../../shared/types'
-import { QuestRules } from '../../../../server/game/ruleset'
-// import { evilRoles } from '@/shared/constants' TODO
+import { useWebSocketContext } from '@/client/context/WebSocketContext'
+import { usePlayerContext } from '@/client/context/PlayerContext'
+import { useRemainingTime } from '@/client/hooks/useRemainingTime'
+
+import { Player, QuestResult } from '@/shared/types'
+import { QuestRules } from '@/server/game/ruleset'
+import { evilRoles, tokenableEvilRoles } from '@/shared/constants'
 
 export default function GamePage() {
   const { sendMessage, lobbyState } = useWebSocketContext()
@@ -81,9 +81,7 @@ export default function GamePage() {
   const isLeader = id === currentLeader?.id
 
   const isRoleGood = (role: string) => {
-    return !['Morgan le Fey', 'Minion of Mordred', 'Blind Hunter'].includes(
-      role,
-    )
+    return !evilRoles.includes(role)
   }
 
   const isGoodPlayer = isRoleGood(me.role)
@@ -185,9 +183,7 @@ export default function GamePage() {
       return 'gray-100'
     }
     if (playerId === id) {
-      if (
-        ['Morgan le Fey', 'Minion of Mordred', 'Blind Hunter'].includes(role)
-      ) {
+      if (evilRoles.includes(role)) {
         return red
       } else {
         return blue
@@ -641,6 +637,8 @@ export default function GamePage() {
   const QuestResolution = () => {
     if (phase !== 'QUEST_RESOLUTION') return null
 
+    if (!me.role) return null
+
     if (!lobbyState.currentTeam.includes(id)) {
       return <p>Waiting for questing team to return...</p>
     }
@@ -649,8 +647,7 @@ export default function GamePage() {
       me.role === 'Youth' && lobbyState.magicTokenHolder === id
 
     const isEvilTokened =
-      ['Minion of Mordred', 'Blind Hunter'].includes(me.role ?? '') &&
-      lobbyState.magicTokenHolder === id
+      tokenableEvilRoles.includes(me.role) && lobbyState.magicTokenHolder === id
 
     const canFail = (!isGoodPlayer && !isEvilTokened) || isYouthTokened
 

@@ -1,4 +1,5 @@
 import * as R from 'remeda'
+import { evilRoles } from '@/shared/constants'
 
 export const isPlayerEvil = (role: string): boolean => {
   const evilRoles = ['Morgan le Fey', 'Blind Hunter', 'Minion of Mordred']

@@ -2,6 +2,7 @@ import { Lobby, MyWebSocketServer, QuestResult } from '../../shared/types'
 import { getQuestRules } from './ruleset'
 import { isPlayerEvil } from './roles'
 import { advancePhase } from './stateMachine'
+import { showsAsEvilRoles } from '@/shared/constants'
 
 /**
  * Updates a team for the quest.
@@ -132,11 +133,7 @@ export const confirmAmuletUsage = (lobby: Lobby) => {
     throw new Error(`${lobby.amuletUsedOn} has no role.`)
   }
 
-  const showsAsGood =
-    !playerBeingChecked.role.includes('Morgan le Fey') &&
-    !playerBeingChecked.role.includes('Blind Hunter') &&
-    !playerBeingChecked.role.includes('Minion of Mordred') &&
-    !playerBeingChecked.role.includes('Troublemaker')
+  const showsAsGood = !showsAsEvilRoles.includes(playerBeingChecked.role)
 
   lobby.amuletHistory.push({
     amuletHolder: lobby.amuletHolder,

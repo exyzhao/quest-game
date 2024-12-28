@@ -1,6 +1,6 @@
 import './global.css'
 import { Crimson_Text } from 'next/font/google'
-import { WebSocketProvider } from '../context/WebSocketContext'
+import { WebSocketProvider } from '@/client/context/WebSocketContext'
 import { PlayerProvider } from '@/client/context/PlayerContext'
 import GlobalErrorPopup from './components/GlobalErrorPopup'
 import Navbar from './components/Navbar'
