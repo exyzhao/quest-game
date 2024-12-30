@@ -779,7 +779,7 @@ const sendPrivateMessage = (
 
 /**
  * This updates the last activity timestamp of a lobby.
- * We delete lobbies after 90 mins of inactivity, so we should call this any time we process an event.
+ * We delete lobbies after 60 mins of inactivity, so we should call this any time we process an event.
  *
  * @param lobby
  */

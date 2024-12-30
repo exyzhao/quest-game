@@ -14,7 +14,7 @@ server.listen(PORT, () => {
 })
 
 // Periodic Cleanup
-const LOBBY_TIMEOUT = 1000 * 60 * 90 // 90 min
+const LOBBY_TIMEOUT = 1000 * 60 * 60 // 60 min
 setInterval(() => {
   removeStaleLobbies(LOBBIES, LOBBY_TIMEOUT)
 }, 60000)

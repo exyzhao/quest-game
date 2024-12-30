@@ -86,8 +86,6 @@ export default function GamePage() {
 
   const isGoodPlayer = isRoleGood(me.role)
 
-  const discussionTime = 20 // 5 minutes
-  const blindHunterTime = 10 // 10 seconds for Blind Hunter to opt into hunting
   let countdownTotalSeconds = 0
   if (phase === 'THE_DISCUSSION') {
     countdownTotalSeconds = DISCUSSION_TIME_SECONDS
@@ -440,14 +438,7 @@ export default function GamePage() {
     ) {
       updateHunted(player.id)
     }
-    if (
-      phase === 'GOODS_LAST_CHANCE' &&
-      lobbyState.discussionStartTime &&
-      Date.now() >
-        lobbyState.discussionStartTime +
-          discussionTime * 1000 +
-          blindHunterTime * 1000
-    ) {
+    if (phase === 'GOODS_LAST_CHANCE') {
       updatePointed(player.id)
     }
   }
@@ -482,14 +473,7 @@ export default function GamePage() {
     ) {
       return true
     }
-    if (
-      phase === 'GOODS_LAST_CHANCE' &&
-      lobbyState.discussionStartTime &&
-      Date.now() >
-        lobbyState.discussionStartTime +
-          discussionTime * 1000 +
-          blindHunterTime * 1000
-    ) {
+    if (phase === 'GOODS_LAST_CHANCE') {
       return true
     }
     return false
