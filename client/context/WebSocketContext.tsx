@@ -44,7 +44,6 @@ export const WebSocketProvider = ({
     ws.current.onmessage = (event) => {
       try {
         const parsed = JSON.parse(event.data)
-        console.log('Received:', parsed)
 
         switch (parsed.event) {
           case 'GAME_STATE_UPDATE':

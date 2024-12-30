@@ -42,6 +42,8 @@ export default function GamePage() {
     setIsQuestCardSubmited(false)
   }
 
+  const env = process.env.NODE_ENV
+
   // Game code
   if (!lobbyState) {
     return <p>Loading game...</p>
@@ -816,7 +818,9 @@ export default function GamePage() {
   }
 
   // For debugging
-  console.log(lobbyState)
+  if (env === 'development') {
+    console.log(lobbyState)
+  }
 
   return (
     <main className="flex flex-col gap-6">

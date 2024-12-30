@@ -47,6 +47,8 @@ export default function Home() {
     }
   }, [errorMessage])
 
+  const env = process.env.NODE_ENV
+
   return (
     <main>
       <p>Enter a lobby code and your name to start/join a game.</p>
@@ -72,14 +74,19 @@ export default function Home() {
           {waiting ? 'Joining...' : 'Join Lobby'}
         </button>
       </div>
-      <p>DEV ONLY</p>
-      <button
-        onClick={() => {
-          sendMessage({ event: 'DEBUG_STATE' })
-        }}
-      >
-        SET LOBBY STATE
-      </button>
+      {env === 'development' && (
+        <div>
+          <p>Dev Options:</p>
+          <button
+            onClick={() => {
+              sendMessage({ event: 'DEBUG_STATE' })
+            }}
+          >
+            SET LOBBY STATE
+          </button>
+        </div>
+      )}
+
       <p>
         Welcome to Don Eskridge&apos;s Quest, a newer social deduction game
         similar to Avalon.
