@@ -15,6 +15,7 @@ import {
 import { getQuestRules } from '../game/ruleset'
 import {
   DISCUSSION_TIME_SECONDS,
+  EVIL_ROLES,
   HUNTING_OPTION_SECONDS,
   KNOWN_EVIL_ROLES,
 } from '@/shared/constants'
@@ -354,20 +355,24 @@ export const handleStartGame = (
     }
 
     // Notify evils (except Blind Hunter) about each other
-    const evils = lobby.players.filter(
+    const evilsToNotify = lobby.players.filter(
       (p) => p.role && KNOWN_EVIL_ROLES.includes(p.role),
     )
-    if (evils.length > 0) {
-      const evilIds = evils.map((e) => e.id)
-      lobby.knownEvils = evilIds
+    // In 4 or 5 player games, Morgan knows who Blind Hunter is
+    const evilsToNotifyAbout =
+      lobby.players.length >= 6
+        ? evilsToNotify
+        : lobby.players.filter((p) => p.role && EVIL_ROLES.includes(p.role))
 
-      evils.forEach((evil) => {
-        sendPrivateMessage(wss, evil.id, {
-          event: 'EVIL_INFO',
-          message: evilIds,
-        })
+    const evilIds = evilsToNotifyAbout.map((p) => p.id)
+    lobby.knownEvils = evilIds
+    evilsToNotify.forEach((p) => {
+      sendPrivateMessage(wss, p.id, {
+        event: 'EVIL_INFO',
+        message: evilIds,
       })
-    }
+    })
+
     advancePhase(lobby)
     broadcastToLobby(wss, lobbyId, {
       event: GAME_STATE_UPDATE,

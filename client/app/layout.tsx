@@ -7,8 +7,8 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 
 export const metadata = {
-  title: 'Quest App',
-  description: 'An Quest game implementation in Next.js',
+  title: 'Quest',
+  description: 'Quest, a social deduction game',
 }
 
 const crimsonText = Crimson_Text({
