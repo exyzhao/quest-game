@@ -1,14 +1,7 @@
 'use client'
 
 import * as R from 'remeda'
-import {
-  useRef,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-  RefObject,
-} from 'react'
+import { useRef, useEffect, useLayoutEffect, useState, RefObject } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
 
@@ -74,7 +67,7 @@ export default function GamePage() {
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound,
   )
-  const { phase, hunted } = lobbyState
+  const { phase, hunted, discussionStartTime } = lobbyState
 
   if (!me || !me.role || !currentLeader || !currentRule) {
     return <p>TODO ERROR2</p>
@@ -89,26 +82,14 @@ export default function GamePage() {
 
   const discussionTime = 20 // 5 minutes
   const blindHunterTime = 10 // 10 seconds for Blind Hunter to opt into hunting
-  let totalSeconds = 0
+  let countdownTotalSeconds = 0
   if (phase === 'THE_DISCUSSION') {
-    totalSeconds = discussionTime
+    countdownTotalSeconds = discussionTime
   } else if (phase === 'GOODS_LAST_CHANCE') {
-    totalSeconds = discussionTime + blindHunterTime
+    countdownTotalSeconds = discussionTime + blindHunterTime
+  } else {
+    countdownTotalSeconds = 0
   }
-
-  // Memoize startTime and totalSeconds
-  const discussionStartTime = useMemo(
-    () => lobbyState.discussionStartTime,
-    [lobbyState.discussionStartTime],
-  )
-  const countdownTotalSeconds = useMemo(() => {
-    if (phase === 'THE_DISCUSSION') {
-      return discussionTime
-    } else if (phase === 'GOODS_LAST_CHANCE') {
-      return discussionTime + blindHunterTime
-    }
-    return 0
-  }, [phase, discussionTime, blindHunterTime])
 
   function rotatePlayers(players: Player[], id: string): Player[] {
     const index = R.pipe(
@@ -775,8 +756,8 @@ export default function GamePage() {
                 <p>
                   You may choose to begin the Hunt. If so, you must identify the{' '}
                   <span className="text-blue-500">Cleric</span> and one other{' '}
-                  <span className="text-blue-500">good</span> player's role. You
-                  have{' '}
+                  <span className="text-blue-500">good</span> player&apos;s
+                  role. You have{' '}
                   <Countdown
                     startTime={discussionStartTime}
                     totalSeconds={countdownTotalSeconds}

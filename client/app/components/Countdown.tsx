@@ -1,4 +1,4 @@
-import { useEffect, useMemo, memo } from 'react'
+import { useMemo, memo } from 'react'
 import { useRemainingTime } from '@/client/hooks/useRemainingTime'
 
 interface CountdownProps {
