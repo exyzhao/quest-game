@@ -13,7 +13,9 @@ export default function Home() {
   const [waiting, setWaiting] = useState(false)
   const router = useRouter()
 
-  const joinGame = () => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault() // Prevents page reload
+
     if (!playerName.trim() || !lobbyCode.trim()) {
       setError('Both lobby code and player name are required.')
       return
@@ -50,29 +52,37 @@ export default function Home() {
   const env = process.env.NODE_ENV
 
   return (
-    <main>
+    <main className="flex flex-col gap-6">
       <p>Enter a lobby code and your name to start/join a game.</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <div>
+      <form className="flex max-w-72 flex-col gap-2" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Enter lobby code"
           value={lobbyCode}
           onChange={(e) => setLobbyCode(e.target.value)}
-          style={{ margin: '5px' }}
+          required
         />
-        <br />
         <input
           type="text"
           placeholder="Enter your name"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
-          style={{ margin: '5px' }}
+          required
         />
-        <br />
-        <button onClick={joinGame} disabled={!isConnected || waiting}>
+        <button type="submit" disabled={!isConnected || waiting}>
           {waiting ? 'Joining...' : 'Join Lobby'}
         </button>
+      </form>
+      <div>
+        <p>
+          Welcome to Don Eskridge&apos;s Quest, a newer social deduction game
+          similar to Avalon.
+        </p>
+        <p>
+          This set contains the roles for the Director&apos;s Cut for 4-10
+          players.
+        </p>
       </div>
       {env === 'development' && (
         <div>
@@ -86,15 +96,6 @@ export default function Home() {
           </button>
         </div>
       )}
-
-      <p>
-        Welcome to Don Eskridge&apos;s Quest, a newer social deduction game
-        similar to Avalon.
-      </p>
-      <p>
-        This set contains the roles for the Director&apos;s Cut for 4-10
-        players.
-      </p>
     </main>
   )
 }

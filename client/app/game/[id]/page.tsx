@@ -26,6 +26,8 @@ export default function GamePage() {
     useState<boolean>(false)
   const [pointed, setPointed] = useState<string[]>([])
 
+  const env = process.env.NODE_ENV
+
   // Redirect if directly navigating
   useEffect(() => {
     if (!lobbyState) {
@@ -42,23 +44,21 @@ export default function GamePage() {
     setIsQuestCardSubmited(false)
   }
 
-  const env = process.env.NODE_ENV
-
   // Game code
   if (!lobbyState) {
     return <p>Loading game...</p>
   }
-
   if (!id) {
     return <p>TODO ERROR1</p>
   }
-
   if (!lobbyState.currentLeader) {
     return <p>ERROR: No leader assigned.</p>
   }
   if (!lobbyState.rules) {
     return <p>ERROR: No rules.</p>
   }
+
+  const { phase, hunted, discussionStartTime } = lobbyState
 
   // Helpers
   const getPlayerFromId = (playerId: string) => {
@@ -69,7 +69,6 @@ export default function GamePage() {
   const currentRule = lobbyState.rules?.find(
     (rule: QuestRules) => rule.round === lobbyState.currentRound,
   )
-  const { phase, hunted, discussionStartTime } = lobbyState
 
   if (!me || !me.role || !currentLeader || !currentRule) {
     return <p>TODO ERROR2</p>
