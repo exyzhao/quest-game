@@ -38,8 +38,8 @@ export default function Lobby() {
   }
 
   return (
-    <main>
-      <h2>Players</h2>
+    <main className="flex flex-col gap-6">
+      <h2>{lobbyState.players.length} players in the lobby (4-10 allowed).</h2>
       <ul>
         {lobbyState.players.map((player: Player) => (
           <li key={player.id}>{player.name}</li>
@@ -50,8 +50,7 @@ export default function Lobby() {
           Start Game
         </button>
       )}
-      {lobbyState.phase === 'LOBBY' && <p>Waiting for game to start...</p>}
-      {lobbyState.phase !== 'LOBBY' && <p>Game in progress...</p>}
+      {lobbyState.phase !== 'LOBBY' && <p>ERROR: Game in progress...</p>}
     </main>
   )
 }
