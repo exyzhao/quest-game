@@ -11,7 +11,12 @@ import Countdown from '../../components/Countdown'
 
 import { Player, QuestResult } from '@/shared/types'
 import { QuestRules } from '@/server/game/ruleset'
-import { EVIL_ROLES, TOKENABLE_EVIL_ROLES } from '@/shared/constants'
+import {
+  DISCUSSION_TIME_SECONDS,
+  EVIL_ROLES,
+  HUNTING_OPTION_SECONDS,
+  TOKENABLE_EVIL_ROLES,
+} from '@/shared/constants'
 
 export default function GamePage() {
   const { sendMessage, lobbyState } = useWebSocketContext()
@@ -85,9 +90,9 @@ export default function GamePage() {
   const blindHunterTime = 10 // 10 seconds for Blind Hunter to opt into hunting
   let countdownTotalSeconds = 0
   if (phase === 'THE_DISCUSSION') {
-    countdownTotalSeconds = discussionTime
-  } else if (phase === 'GOODS_LAST_CHANCE') {
-    countdownTotalSeconds = discussionTime + blindHunterTime
+    countdownTotalSeconds = DISCUSSION_TIME_SECONDS
+  } else if (phase === 'HUNTING_OPTION') {
+    countdownTotalSeconds = DISCUSSION_TIME_SECONDS + HUNTING_OPTION_SECONDS
   } else {
     countdownTotalSeconds = 0
   }
@@ -853,17 +858,11 @@ export default function GamePage() {
             Confirm Amulet
           </button>
         ) : null}
-        {phase === 'GOODS_LAST_CHANCE' &&
-        me.role === 'Blind Hunter' &&
-        lobbyState.discussionStartTime &&
-        Date.now() <
-          lobbyState.discussionStartTime +
-            discussionTime * 1000 +
-            blindHunterTime * 1000 ? (
+        {phase === 'HUNTING_OPTION' && me.role === 'Blind Hunter' && (
           <button className="bg-green-300" onClick={startTheHunt}>
             Begin the Hunt
           </button>
-        ) : null}
+        )}
         {phase === 'THE_HUNT' && me.role === 'Blind Hunter' && (
           <div className="flex flex-col gap-4">
             {hunted[0] && (

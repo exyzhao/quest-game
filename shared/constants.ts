@@ -7,3 +7,5 @@ export const SHOWS_AS_EVIL_ROLES = [
   'Blind Hunter',
   'Troublemaker',
 ]
+export const DISCUSSION_TIME_SECONDS = 15
+export const HUNTING_OPTION_SECONDS = 10

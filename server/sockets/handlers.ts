@@ -13,7 +13,11 @@ import {
   confirmAmuletUsage,
 } from '../game/quests'
 import { getQuestRules } from '../game/ruleset'
-import { KNOWN_EVIL_ROLES } from '@/shared/constants'
+import {
+  DISCUSSION_TIME_SECONDS,
+  HUNTING_OPTION_SECONDS,
+  KNOWN_EVIL_ROLES,
+} from '@/shared/constants'
 
 export const LOBBIES: Record<string, Lobby> = {}
 
@@ -510,8 +514,17 @@ export const handleSubmitQuest = (
               event: 'GAME_STATE_UPDATE',
               state: lobby,
             })
+            setTimeout(() => {
+              if (lobby.phase === 'HUNTING_OPTION') {
+                lobby.phase = 'GOODS_LAST_CHANCE'
+                broadcastToLobby(wss, lobbyId, {
+                  event: 'GAME_STATE_UPDATE',
+                  state: lobby,
+                })
+              }
+            }, HUNTING_OPTION_SECONDS * 1000)
           }
-        }, 20000) // 5 minutes
+        }, DISCUSSION_TIME_SECONDS * 1000)
       }
     } else {
       // Inform the player their card was submitted successfully
