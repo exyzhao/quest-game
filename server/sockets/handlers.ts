@@ -238,6 +238,9 @@ export const handleDisconnection = (
     // Remove the player entirely if still in the lobby phase
     lobby.players = R.filter(lobby.players, (p) => p.id !== playerId)
     console.log(`${player.name} removed from lobby ${lobbyId}.`)
+    if (lobby.players.length < 1) {
+      delete LOBBIES[lobbyId]
+    }
   } else {
     // In game phase, just mark them as disconnected
     if (!lobby.disconnectedPlayers.find((dp) => dp.id === playerId)) {

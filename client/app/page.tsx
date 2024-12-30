@@ -8,10 +8,12 @@ export default function Home() {
   const { isConnected, sendMessage, lobbyState, errorMessage } =
     useWebSocketContext()
   const [playerName, setPlayerName] = useState('')
-  const [lobbyCode, setLobbyCode] = useState('1234')
+  const [lobbyCode, setLobbyCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [waiting, setWaiting] = useState(false)
   const router = useRouter()
+
+  const env = process.env.NODE_ENV
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault() // Prevents page reload
@@ -49,7 +51,9 @@ export default function Home() {
     }
   }, [errorMessage])
 
-  const env = process.env.NODE_ENV
+  if (env === 'development') {
+    setLobbyCode('1234')
+  }
 
   return (
     <main className="flex flex-col gap-6">
