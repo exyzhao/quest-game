@@ -50,7 +50,7 @@ export default function Lobby() {
           Start Game
         </button>
       )}
-      {lobbyState.phase !== 'LOBBY' && <p>ERROR: Game in progress...</p>}
+      {lobbyState.phase !== 'LOBBY' && <p>Game in progress...</p>}
     </main>
   )
 }

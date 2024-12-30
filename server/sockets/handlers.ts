@@ -67,7 +67,9 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     magicTokenHolder: null,
     questSubmissions: [],
     rules: getQuestRules(6),
-    possibleRoles: getRolesForPlayerCount(6, true),
+    possibleRoles: getRolesForPlayerCount(6).roles.concat(
+      getRolesForPlayerCount(6).unselectedRoles,
+    ),
     currentLeader: 'player-1',
     upcomingLeader: null,
     amuletHolder: null,
@@ -283,19 +285,12 @@ export const handleStartGame = (
   }
 
   lobby.rules = getQuestRules(lobby.players.length)
-  lobby.possibleRoles = getRolesForPlayerCount(lobby.players.length, true)
 
   try {
-    let roles = getRolesForPlayerCount(playerCount, false)
-    roles = roles.map((role) =>
-      role === 'Special Role'
-        ? Math.random() < 0.5
-          ? 'Troublemaker'
-          : 'Youth'
-        : role,
-    )
+    let allRoles = getRolesForPlayerCount(playerCount)
+    lobby.possibleRoles = allRoles.roles.concat(allRoles.unselectedRoles)
 
-    const shuffledRoles = R.shuffle(roles)
+    const shuffledRoles = R.shuffle(allRoles.roles)
     lobby.players = lobby.players.map((player, index) => ({
       ...player,
       role: shuffledRoles[index],
