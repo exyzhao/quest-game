@@ -17,4 +17,4 @@ server.listen(PORT, () => {
 const LOBBY_TIMEOUT = 1000 * 60 * 90 // 90 min
 setInterval(() => {
   removeStaleLobbies(LOBBIES, LOBBY_TIMEOUT)
-}, 60_000)
+}, 60000)

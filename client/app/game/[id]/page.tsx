@@ -1,13 +1,20 @@
 'use client'
 
 import * as R from 'remeda'
-import { useRef, useEffect, useLayoutEffect, useState, RefObject } from 'react'
+import {
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  RefObject,
+} from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 import { useWebSocketContext } from '@/client/context/WebSocketContext'
 import { usePlayerContext } from '@/client/context/PlayerContext'
-import { useRemainingTime } from '@/client/hooks/useRemainingTime'
+import Countdown from '../../components/Countdown'
 
 import { Player, QuestResult } from '@/shared/types'
 import { QuestRules } from '@/server/game/ruleset'
@@ -40,12 +47,6 @@ export default function GamePage() {
     setTokenHolder(null)
     setPassQuest(null)
     setIsQuestCardSubmited(false)
-  }
-
-  const formatTime = (timeInSeconds: number) => {
-    const minutes = Math.floor(timeInSeconds / 60)
-    const seconds = timeInSeconds % 60
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
   // Game code
@@ -94,10 +95,20 @@ export default function GamePage() {
   } else if (phase === 'GOODS_LAST_CHANCE') {
     totalSeconds = discussionTime + blindHunterTime
   }
-  const remainingTime = useRemainingTime(
-    lobbyState.discussionStartTime,
-    totalSeconds,
+
+  // Memoize startTime and totalSeconds
+  const discussionStartTime = useMemo(
+    () => lobbyState.discussionStartTime,
+    [lobbyState.discussionStartTime],
   )
+  const countdownTotalSeconds = useMemo(() => {
+    if (phase === 'THE_DISCUSSION') {
+      return discussionTime
+    } else if (phase === 'GOODS_LAST_CHANCE') {
+      return discussionTime + blindHunterTime
+    }
+    return 0
+  }, [phase, discussionTime, blindHunterTime])
 
   function rotatePlayers(players: Player[], id: string): Player[] {
     const index = R.pipe(
@@ -647,7 +658,8 @@ export default function GamePage() {
       me.role === 'Youth' && lobbyState.magicTokenHolder === id
 
     const isEvilTokened =
-      TOKENABLE_EVIL_ROLES.includes(me.role) && lobbyState.magicTokenHolder === id
+      TOKENABLE_EVIL_ROLES.includes(me.role) &&
+      lobbyState.magicTokenHolder === id
 
     const canFail = (!isGoodPlayer && !isEvilTokened) || isYouthTokened
 
@@ -743,55 +755,65 @@ export default function GamePage() {
         return <p>Waiting for the team to resolve the quest...</p>
       case 'THE_DISCUSSION':
         return (
-          <p>
-            You have{' '}
-            {remainingTime !== null ? formatTime(remainingTime) : '5:00'}{' '}
-            remaining to discuss who the{' '}
-            <span className="text-red-700">evils</span> may be.
-          </p>
+          <div>
+            <p>
+              You have{' '}
+              <Countdown
+                startTime={discussionStartTime}
+                totalSeconds={countdownTotalSeconds}
+              />{' '}
+              remaining to discuss who the{' '}
+              <span className="text-red-700">evils</span> may be.
+            </p>
+          </div>
+        )
+      case 'HUNTING_OPTION':
+        return (
+          <>
+            {me.role === 'Blind Hunter' ? (
+              <div>
+                <p>
+                  You may choose to begin the Hunt. If so, you must identify the{' '}
+                  <span className="text-blue-500">Cleric</span> and one other{' '}
+                  <span className="text-blue-500">good</span> player's role. You
+                  have{' '}
+                  <Countdown
+                    startTime={discussionStartTime}
+                    totalSeconds={countdownTotalSeconds}
+                  />{' '}
+                  remaining to decide.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p>
+                  The <span className="text-red-700">Blind Hunter</span> has{' '}
+                  <Countdown
+                    startTime={discussionStartTime}
+                    totalSeconds={countdownTotalSeconds}
+                  />{' '}
+                  remaining to decide whether to begin the Hunt.
+                </p>
+              </div>
+            )}
+          </>
         )
       case 'GOODS_LAST_CHANCE':
-        if (
-          !!remainingTime &&
-          remainingTime > 0 &&
-          me.role === 'Blind Hunter'
-        ) {
-          return (
-            <p>
-              You may choose to begin the Hunt. If so, you must identify the{' '}
-              <span className="text-blue-500">Cleric</span> and one other{' '}
-              <span className="text-blue-500">good</span> player's role. You
-              have {remainingTime} second(s) to decide.
-            </p>
-          )
-        } else if (
-          !!remainingTime &&
-          remainingTime > 0 &&
-          me.role !== 'Blind Hunter'
-        ) {
-          return (
-            <p>
-              The <span className="text-red-700">Blind Hunter</span> has{' '}
-              {remainingTime} second(s) to decide whether to begin the Hunt.
-            </p>
-          )
-        } else {
-          return (
-            <p>
-              Select exactly two players to accuse.{' '}
-              <span className="text-blue-500">Good</span> players must
-              collectively accuse all <span className="text-red-700">evil</span>{' '}
-              players and cannot wrongly accuse any{' '}
-              <span className="text-blue-500">good</span> players.
-            </p>
-          )
-        }
+        return (
+          <p>
+            Select exactly two players to accuse.{' '}
+            <span className="text-blue-500">Good</span> players must
+            collectively accuse all <span className="text-red-700">evil</span>{' '}
+            players and cannot wrongly accuse any{' '}
+            <span className="text-blue-500">good</span> players.
+          </p>
+        )
       case 'THE_HUNT':
         return me.role === 'Blind Hunter' ? (
           <p>
             Identify the <span className="text-blue-500">Cleric</span> and one
-            other <span className="text-blue-500">good</span> player's role. No
-            talking is allowed.
+            other <span className="text-blue-500">good</span> player&apos;s
+            role. No talking is allowed.
           </p>
         ) : (
           <p>

@@ -8,6 +8,7 @@ export type GamePhase =
   | 'LEADER_SELECTION'
   | 'AMULET_CHECK'
   | 'THE_DISCUSSION'
+  | 'HUNTING_OPTION'
   | 'THE_HUNT'
   | 'GOODS_LAST_CHANCE'
   | 'GOOD_VICTORY'

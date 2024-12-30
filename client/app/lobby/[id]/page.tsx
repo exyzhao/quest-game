@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useWebSocketContext } from '@/client/context/WebSocketContext'
 import { useRouter, usePathname } from 'next/navigation'
+import { Player } from '@/shared/types'
 
 export default function Lobby() {
   const { isConnected, sendMessage, lobbyState } = useWebSocketContext()
@@ -40,7 +41,7 @@ export default function Lobby() {
     <main>
       <h2>Players</h2>
       <ul>
-        {lobbyState.players.map((player: any) => (
+        {lobbyState.players.map((player: Player) => (
           <li key={player.id}>{player.name}</li>
         ))}
       </ul>

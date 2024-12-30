@@ -510,7 +510,7 @@ export const handleSubmitQuest = (
       if (lobby.phase === 'THE_DISCUSSION') {
         setTimeout(() => {
           if (lobby.phase === 'THE_DISCUSSION') {
-            lobby.phase = 'GOODS_LAST_CHANCE'
+            lobby.phase = 'HUNTING_OPTION'
             broadcastToLobby(wss, lobbyId, {
               event: 'GAME_STATE_UPDATE',
               state: lobby,

@@ -14,6 +14,9 @@
   },
   "dependencies": {
     "express": "^4.21.2",
+    "next": "15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "remeda": "^2.18.0",
     "ws": "^8.18.0",
     "wscat": "^6.0.1"

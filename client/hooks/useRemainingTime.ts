@@ -9,18 +9,17 @@ export function useRemainingTime(
   useEffect(() => {
     if (!startTime) return
 
-    const tick = () => {
+    const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000)
-      const timeLeft = Math.max(0, totalSeconds - elapsed)
-      setRemainingTime(timeLeft)
-    }
+      const timeLeft = totalSeconds - elapsed
+      setRemainingTime(timeLeft > 0 ? timeLeft : 0)
 
-    tick() // run on mount
-    const intervalId = setInterval(tick, 1000)
+      if (timeLeft <= 0) {
+        clearInterval(interval)
+      }
+    }, 1000)
 
-    return () => {
-      clearInterval(intervalId)
-    }
+    return () => clearInterval(interval)
   }, [startTime, totalSeconds])
 
   return remainingTime

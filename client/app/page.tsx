@@ -81,11 +81,12 @@ export default function Home() {
         SET LOBBY STATE
       </button>
       <p>
-        Welcome to Don Eskridge's Quest, a newer social deduction game similar
-        to Avalon.
+        Welcome to Don Eskridge&apos;s Quest, a newer social deduction game
+        similar to Avalon.
       </p>
       <p>
-        This set contains the roles for the Director's Cut for 4-10 players.
+        This set contains the roles for the Director&apos;s Cut for 4-10
+        players.
       </p>
     </main>
   )
