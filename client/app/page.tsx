@@ -51,9 +51,11 @@ export default function Home() {
     }
   }, [errorMessage])
 
-  if (env === 'development') {
-    setLobbyCode('1234')
-  }
+  useEffect(() => {
+    if (env === 'development') {
+      setLobbyCode('1234')
+    }
+  }, [env])
 
   return (
     <main className="flex flex-col gap-6">
