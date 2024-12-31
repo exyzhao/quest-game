@@ -10,8 +10,11 @@ app.use(cors())
 const server = http.createServer(app)
 initWebSockets(server)
 
-const PORT = 4000
-server.listen(PORT, () => {
+// Use the Fly-assigned port if available, otherwise default to 4000
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000
+
+// Bind to 0.0.0.0
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server listening on port ${PORT}`)
 })
 

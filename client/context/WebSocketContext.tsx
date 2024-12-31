@@ -32,8 +32,13 @@ export const WebSocketProvider = ({
   const { setId, setRole, setClericInfo, setKnownEvils, setAmuletInfo } =
     usePlayerContext()
 
+  const host =
+    process.env.NODE_ENV === 'production'
+      ? 'wss://quest-game.fly.dev'
+      : 'ws://localhost:4000'
+
   useEffect(() => {
-    ws.current = new WebSocket('ws://localhost:4000')
+    ws.current = new WebSocket(host)
     ws.current.onopen = () => setIsConnected(true)
     ws.current.onclose = () => setIsConnected(false)
     ws.current.onerror = (err) => {
