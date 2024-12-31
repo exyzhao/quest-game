@@ -1,4 +1,4 @@
-app = "quest-game-server"
+app = "quest-game"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
