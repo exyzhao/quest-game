@@ -1,5 +1,5 @@
 import * as R from 'remeda'
-import { EVIL_ROLES } from '@/shared/constants'
+import { EVIL_ROLES } from '../constants'
 
 interface RolesResult {
   roles: string[]

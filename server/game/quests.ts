@@ -1,7 +1,7 @@
-import { Lobby } from '@/shared/types'
+import { Lobby } from '../types'
 import { getQuestRules } from './ruleset'
 import { advancePhase } from './stateMachine'
-import { SHOWS_AS_EVIL_ROLES } from '@/shared/constants'
+import { SHOWS_AS_EVIL_ROLES } from '../constants'
 
 /**
  * Updates a team for the quest.

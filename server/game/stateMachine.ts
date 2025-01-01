@@ -1,18 +1,4 @@
-import { Lobby } from '@/shared/types'
-import { broadcastToLobby } from '../sockets/handlers'
-
-export type GamePhase =
-  | 'LOBBY'
-  | 'TEAM_SELECTION'
-  | 'QUEST_RESOLUTION'
-  | 'LEADER_SELECTION'
-  | 'AMULET_CHECK'
-  | 'THE_DISCUSSION'
-  | 'HUNTING_OPTION'
-  | 'THE_HUNT'
-  | 'GOODS_LAST_CHANCE'
-  | 'GOOD_VICTORY'
-  | 'EVIL_VICTORY'
+import { Lobby } from '../types'
 
 /**
  * Advances the state of the game. Remember to broadcast lobby state after calling.

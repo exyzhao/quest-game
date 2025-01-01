@@ -1,4 +1,4 @@
-ARG NODE_VERSION=18.17.0
+ARG NODE_VERSION=20.17.0
 
 # Alpine image
 FROM node:${NODE_VERSION}-alpine AS alpine
@@ -9,7 +9,6 @@ RUN apk add --no-cache libc6-compat
 FROM alpine as base
 RUN npm install turbo --global
 RUN npm install npm --global --force
-
 
 # Prune projects
 FROM base AS pruner

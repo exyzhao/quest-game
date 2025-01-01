@@ -1,4 +1,4 @@
-import { QuestRules } from '@/shared/types'
+import { QuestRules } from '../types'
 
 export const getQuestRules = (playerCount: number): QuestRules[] => {
   // Amulet field means amulet before round

@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "npm@9.4.1",
   "workspaces": [
+    "shared",
     "client",
     "server"
   ],

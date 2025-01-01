@@ -1,5 +1,5 @@
-import { WebSocketServer, WebSocket } from 'ws'
-import { MyWebSocket, MyWebSocketServer } from '@/shared/types'
+import { WebSocketServer } from 'ws'
+import { MyWebSocket, MyWebSocketServer } from '../types'
 import {
   JOIN_GAME,
   START_GAME,

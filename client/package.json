@@ -8,6 +8,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@myorg/shared": "workspace:*"
+    "shared": "*"
   }
 }
