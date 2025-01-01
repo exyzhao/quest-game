@@ -34,7 +34,7 @@ export const WebSocketProvider = ({
 
   const host =
     process.env.NODE_ENV === 'production'
-      ? 'wss://quest-game.fly.dev'
+      ? 'wss://quest-game-server.fly.dev'
       : 'ws://localhost:4000'
 
   useEffect(() => {
