@@ -1,6 +1,6 @@
 import { getRolesForPlayerCount } from '../game/roles'
 import { GAME_STATE_UPDATE } from './events'
-import { MyWebSocket, MyWebSocketServer, Lobby } from '../../shared/types'
+import { MyWebSocket, MyWebSocketServer, Lobby } from '@/shared/types'
 import * as R from 'remeda'
 import { advancePhase } from '../game/stateMachine'
 import {

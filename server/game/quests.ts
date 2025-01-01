@@ -1,4 +1,4 @@
-import { Lobby } from '../../shared/types'
+import { Lobby } from '@/shared/types'
 import { getQuestRules } from './ruleset'
 import { advancePhase } from './stateMachine'
 import { SHOWS_AS_EVIL_ROLES } from '@/shared/constants'

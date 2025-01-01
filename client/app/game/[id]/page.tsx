@@ -9,8 +9,7 @@ import { useWebSocketContext } from '@/client/context/WebSocketContext'
 import { usePlayerContext } from '@/client/context/PlayerContext'
 import Countdown from '../../components/Countdown'
 
-import { Player, QuestResult } from '@/shared/types'
-import { QuestRules } from '@/server/game/ruleset'
+import { Player, QuestRules, QuestResult } from '@/shared/types'
 import {
   DISCUSSION_TIME_SECONDS,
   EVIL_ROLES,

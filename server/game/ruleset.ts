@@ -1,9 +1,4 @@
-export interface QuestRules {
-  round: number
-  requiredPlayers: number
-  failsRequired: number
-  amulet: boolean
-}
+import { QuestRules } from '@/shared/types'
 
 export const getQuestRules = (playerCount: number): QuestRules[] => {
   // Amulet field means amulet before round

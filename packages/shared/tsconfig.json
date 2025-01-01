@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "module": "CommonJS",
+    "target": "ES2022",
+    "esModuleInterop": true
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

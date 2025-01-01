@@ -1,4 +1,4 @@
-import { Lobby } from '../../shared/types'
+import { Lobby } from '@/shared/types'
 import { broadcastToLobby } from '../sockets/handlers'
 
 export type GamePhase =

@@ -1,0 +1,10 @@
+app = "quest-game-server"
+primary_region = "lax"
+
+[build.args]
+  PROJECT = "server"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  processes = ["app"]

@@ -3,7 +3,10 @@
   "private": true,
   "scripts": {
     "dev": "ts-node -r tsconfig-paths/register index.ts",
-    "start": "node dist/index.js",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@myorg/shared": "workspace:*"
   }
 }

@@ -10,7 +10,7 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@/shared/*": ["shared/*"],
+      "@/shared/*": ["packages/shared/*"],
       "@/server/*": ["server/*"],
       "@/client/*": ["client/*"]
     }

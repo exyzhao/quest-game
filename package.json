@@ -10,7 +10,13 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "start": "turbo run start",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "dev:server": "turbo run dev --filter=server",
+    "dev:client": "turbo run dev --filter=client",
+    "build:server": "turbo run build --filter=server",
+    "build:client": "turbo run build --filter=client",
+    "start:server": "turbo run start --filter=server",
+    "start:client": "turbo run start --filter=client"
   },
   "dependencies": {
     "cors": "^2.8.5",

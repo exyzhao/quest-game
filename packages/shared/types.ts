@@ -1,6 +1,4 @@
 import { WebSocketServer, WebSocket } from 'ws'
-import { GamePhase } from '../server/game/stateMachine'
-import { QuestRules } from '../server/game/ruleset'
 
 export interface MyWebSocket extends WebSocket {
   lobbyId?: string
@@ -44,6 +42,26 @@ export interface Lobby {
 }
 
 export type sanitizedLobby = Omit<Lobby, 'clericInfo | knownEvils'>
+
+export type GamePhase =
+  | 'LOBBY'
+  | 'TEAM_SELECTION'
+  | 'QUEST_RESOLUTION'
+  | 'LEADER_SELECTION'
+  | 'AMULET_CHECK'
+  | 'THE_DISCUSSION'
+  | 'HUNTING_OPTION'
+  | 'THE_HUNT'
+  | 'GOODS_LAST_CHANCE'
+  | 'GOOD_VICTORY'
+  | 'EVIL_VICTORY'
+
+export interface QuestRules {
+  round: number
+  requiredPlayers: number
+  failsRequired: number
+  amulet: boolean
+}
 
 export interface QuestResult {
   round: number
