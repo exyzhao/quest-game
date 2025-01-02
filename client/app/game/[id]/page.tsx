@@ -973,6 +973,7 @@ export default function GamePage() {
           </p>
         </div>
       )}
+      <p>{JSON.stringify(lobbyState)}</p>
     </main>
   )
 }
