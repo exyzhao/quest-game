@@ -1,6 +1,6 @@
 # Quest (Director's Cut) Monorepo
 
-Welcome to Don Eskridge's **Quest** — a newer social deduction game inspired by _The Resistance: Avalon_. This **Director's Cut** variant is designed for **4–10 players**, featuring unique character roles and a new ruleset.
+Welcome to Don Eskridge's [Quest](https://quest-game-eta.vercel.app/) — a newer social deduction game inspired by _The Resistance: Avalon_, designed for 4–10 players. This contains the Director's Cut variant, featuring unique character roles and a new ruleset.
 
 ---
 

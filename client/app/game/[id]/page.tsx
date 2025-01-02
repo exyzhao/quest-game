@@ -632,29 +632,45 @@ export default function GamePage() {
       TOKENABLE_EVIL_ROLES.includes(me.role) &&
       lobbyState.magicTokenHolder === id
 
+    const canPass = !isYouthTokened
     const canFail = (!isGoodPlayer && !isEvilTokened) || isYouthTokened
 
     return (
-      <div>
+      <div className="mx-auto flex max-w-md flex-col items-center gap-2">
         <p>Play your quest card</p>
-        <button
-          onClick={() => setPassQuest(true)}
-          style={{
-            backgroundColor: passQuest === true ? 'lightblue' : '',
-          }}
-          disabled={isYouthTokened}
-        >
-          Pass
-        </button>
-        <button
-          onClick={() => setPassQuest(false)}
-          style={{
-            backgroundColor: passQuest === false ? 'lightblue' : '',
-          }}
-          disabled={!canFail}
-        >
-          Fail
-        </button>
+        <div className="flex gap-4">
+          <div
+            onClick={canPass ? () => setPassQuest(true) : undefined}
+            className="p-2"
+            style={{
+              color: passQuest ? 'white' : undefined,
+              backgroundColor: canPass
+                ? passQuest
+                  ? '#3B82F6'
+                  : '#d9d9d9'
+                : '#d9d9d9',
+              opacity: `${canPass ? '1' : '0.4'}`,
+            }}
+          >
+            Pass
+          </div>
+          <div
+            onClick={canFail ? () => setPassQuest(false) : undefined}
+            className="p-2"
+            style={{
+              // passQuest can be null
+              color: passQuest === false ? 'white' : undefined,
+              backgroundColor: canFail
+                ? passQuest === false
+                  ? '#EF4444'
+                  : '#d9d9d9'
+                : '#d9d9d9',
+              opacity: `${canFail ? '1' : '0.4'}`,
+            }}
+          >
+            Fail
+          </div>
+        </div>
         <div>
           <button
             onClick={() => {
@@ -666,6 +682,7 @@ export default function GamePage() {
               })
               setIsQuestCardSubmited(true)
             }}
+            className={`${passQuest === null || isQuestCardSubmitted ? 'opacity-40' : null}`}
             disabled={passQuest === null || isQuestCardSubmitted}
           >
             {isQuestCardSubmitted ? 'Submission confirmed' : 'Confirm'}
