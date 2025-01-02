@@ -647,8 +647,7 @@ export default function GamePage() {
     const canFail = (!isGoodPlayer && !isEvilTokened) || isYouthTokened
 
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-2">
-        <p>Play your quest card</p>
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4">
         <div className="flex gap-4">
           <div
             onClick={
@@ -656,7 +655,7 @@ export default function GamePage() {
                 ? () => setPassQuest(true)
                 : undefined
             }
-            className="p-2"
+            className="flex h-10 w-16 items-center justify-center rounded-[4px]"
             style={{
               color: passQuest ? 'white' : undefined,
               backgroundColor: canPass
@@ -677,7 +676,7 @@ export default function GamePage() {
                 ? () => setPassQuest(false)
                 : undefined
             }
-            className="p-2"
+            className="flex w-16 items-center justify-center rounded-[4px]"
             style={{
               // passQuest can be null
               color: passQuest === false ? 'white' : undefined,
@@ -856,13 +855,17 @@ export default function GamePage() {
         rules={lobbyState.rules}
         questHistory={lobbyState.questHistory}
       />
-      <h2>
-        Your Role:{' '}
-        <span className={`${isGoodPlayer ? 'text-blue-500' : 'text-red-700'}`}>
-          {role}
-        </span>
-      </h2>
-      <PhaseMessage />
+      <div className="flex flex-col gap-1">
+        <h2>
+          Your Role:{' '}
+          <span
+            className={`${isGoodPlayer ? 'text-blue-500' : 'text-red-700'}`}
+          >
+            {role}
+          </span>
+        </h2>
+        <PhaseMessage />
+      </div>
       <div className="mb-12 p-8">
         <PlayerList />
       </div>
