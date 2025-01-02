@@ -171,7 +171,7 @@ export default function GamePage() {
               </div>
             ) : null}
             {rule.amulet ? (
-              <div className="absolute left-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-purple-400"></div>
+              <div className="absolute left-[-6px] top-[-6px] flex h-4 w-4 items-center justify-center rounded-full bg-purple-400"></div>
             ) : null}
             <div className="text-center text-sm leading-4">
               {twoFailsRequired ? <p>2 fails required</p> : null}
