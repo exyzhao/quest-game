@@ -77,6 +77,7 @@ export default function GamePage() {
 
   if (!me || !me.role || !currentLeader || !currentRule) {
     return <p>TODO ERROR2</p>
+    // ERROR
   }
   const isLeader = id === currentLeader?.id
 
@@ -161,6 +162,9 @@ export default function GamePage() {
               <div className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-700 text-zinc-100">
                 <p>{quest.fails}</p>
               </div>
+            ) : null}
+            {rule.amulet ? (
+              <div className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-purple-400"></div>
             ) : null}
             <div className="text-center text-sm leading-4">
               {twoFailsRequired ? <p>2 fails required</p> : null}

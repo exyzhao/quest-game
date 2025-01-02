@@ -524,13 +524,8 @@ export const handleSubmitQuest = (
       lobby.questSubmissions = []
       lobby.currentTeam = []
       lobby.magicTokenHolder = null
-      lobby.currentRound++
 
       advancePhase(lobby)
-      broadcastToLobby(wss, lobbyId, {
-        event: 'GAME_STATE_UPDATE',
-        state: lobby,
-      })
 
       if (lobby.phase === 'THE_DISCUSSION') {
         setTimeout(() => {
@@ -551,7 +546,13 @@ export const handleSubmitQuest = (
             }, HUNTING_OPTION_SECONDS * 1000)
           }
         }, DISCUSSION_TIME_SECONDS * 1000)
+      } else {
+        lobby.currentRound++
       }
+      broadcastToLobby(wss, lobbyId, {
+        event: 'GAME_STATE_UPDATE',
+        state: lobby,
+      })
     } else {
       // Inform the player their card was submitted successfully
       ws.send(JSON.stringify({ event: 'CARD_RECEIVED', playerId }))
