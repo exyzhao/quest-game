@@ -1,13 +1,6 @@
 import { WebSocketServer } from 'ws'
 import { MyWebSocket, MyWebSocketServer } from '../types'
 import {
-  JOIN_GAME,
-  START_GAME,
-  UPDATE_TEAM,
-  CONFIRM_TEAM,
-  SUBMIT_QUEST,
-} from './events'
-import {
   handleDebugState,
   handleJoinGame,
   handleStartGame,
@@ -43,19 +36,19 @@ export const initWebSockets = (server: import('http').Server) => {
         case 'DEBUG_STATE':
           handleDebugState(ws, wss)
           break
-        case JOIN_GAME:
+        case 'JOIN_GAME':
           handleJoinGame(ws, data, wss)
           break
-        case START_GAME:
+        case 'START_GAME':
           handleStartGame(ws, data, wss)
           break
-        case UPDATE_TEAM:
+        case 'UPDATE_TEAM':
           handleUpdateTeam(ws, data, wss)
           break
-        case CONFIRM_TEAM:
+        case 'CONFIRM_TEAM':
           handleConfirmTeam(ws, data, wss)
           break
-        case SUBMIT_QUEST:
+        case 'SUBMIT_QUEST':
           handleSubmitQuest(ws, data, wss)
           break
         case 'UPDATE_LEADER':

@@ -54,11 +54,11 @@ USER nodejs
 WORKDIR /app
 RUN npm i debug
 COPY --from=builder --chown=nodejs:nodejs /app .
-WORKDIR /app/apps/${PROJECT}
+WORKDIR /app/${PROJECT}
 
 ARG PORT=3000
 ENV PORT=${PORT}
 ENV NODE_ENV=production
 EXPOSE ${PORT}
 
-CMD node dist/index
+CMD node dist/server/index

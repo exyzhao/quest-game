@@ -1,5 +1,6 @@
+import WebSocket from 'ws'
+
 import { getRolesForPlayerCount } from '../game/roles'
-import { GAME_STATE_UPDATE } from './events'
 import { MyWebSocket, MyWebSocketServer, Lobby } from '../types'
 import * as R from 'remeda'
 import { advancePhase } from '../game/stateMachine'
@@ -159,7 +160,7 @@ export const handleJoinGame = (
 
     // Broadcast the updated lobby state to all players in the lobby
     console.log(`Player ${playerName} connected to lobby ${lobbyId}.`)
-    broadcastToLobby(wss, lobbyId, { event: GAME_STATE_UPDATE, state: lobby })
+    broadcastToLobby(wss, lobbyId, { event: 'GAME_STATE_UPDATE', state: lobby })
     return
   }
 
@@ -238,7 +239,7 @@ export const handleDisconnection = (
   if (lobby.phase === 'LOBBY') {
     // Remove the player entirely if still in the lobby phase
     lobby.players = R.filter(lobby.players, (p) => p.id !== playerId)
-    console.log(`${player.name} removed from lobby ${lobbyId}.`)
+    console.log(`Player ${player.name} removed from lobby ${lobbyId}.`)
     if (lobby.players.length < 1) {
       delete LOBBIES[lobbyId]
     }
@@ -253,7 +254,7 @@ export const handleDisconnection = (
   }
 
   broadcastToLobby(wss, lobbyId, {
-    event: GAME_STATE_UPDATE,
+    event: 'GAME_STATE_UPDATE',
     state: lobby,
   })
 }
@@ -317,7 +318,7 @@ export const handleStartGame = (
       })), // No roles in public state
     }
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: sanitizedLobby,
     })
 
@@ -375,7 +376,7 @@ export const handleStartGame = (
 
     advancePhase(lobby)
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: lobby,
     })
   } catch (e) {
@@ -398,7 +399,7 @@ export const handleUpdateTeam = (
   try {
     updateTeam(lobby, selectedPlayers, magicTokenHolder)
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: lobby,
     })
   } catch (e) {
@@ -417,7 +418,7 @@ export const handleConfirmTeam = (
   try {
     confirmTeam(lobby)
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: lobby,
     })
   } catch (e) {
@@ -557,7 +558,7 @@ export const handleUpdateLeader = (
   try {
     updateLeader(lobby, updatedLeader)
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: lobby,
     })
   } catch (e) {
@@ -579,7 +580,7 @@ export const handleUpdateAmuletHolder = (
   try {
     updateAmuletHolder(lobby, updatedAmuletHolder)
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: lobby,
     })
   } catch (e) {
@@ -601,7 +602,7 @@ export const handleUpdateAmuletUsage = (
   try {
     updateAmuletUsage(lobby, updatedAmuletUsage)
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: lobby,
     })
   } catch (e) {
@@ -620,7 +621,7 @@ export const handleConfirmLeader = (
 
   confirmLeader(lobby)
   broadcastToLobby(wss, lobbyId, {
-    event: GAME_STATE_UPDATE,
+    event: 'GAME_STATE_UPDATE',
     state: lobby,
   })
 }
@@ -636,7 +637,7 @@ export const handleConfirmAmuletUsage = (
 
   confirmAmuletUsage(lobby)
   broadcastToLobby(wss, lobbyId, {
-    event: GAME_STATE_UPDATE,
+    event: 'GAME_STATE_UPDATE',
     state: lobby,
   })
 
@@ -668,7 +669,7 @@ export const handleHuntStarted = (
 
   lobby.phase = 'THE_HUNT'
   broadcastToLobby(wss, lobbyId, {
-    event: GAME_STATE_UPDATE,
+    event: 'GAME_STATE_UPDATE',
     state: lobby,
   })
 }
@@ -690,7 +691,7 @@ export const handleUpdateHunted = (
     }
     lobby.hunted = hunted
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: lobby,
     })
   } catch (e) {
@@ -721,7 +722,7 @@ export const handleConfirmHunted = (
     }
     advancePhase(lobby)
     broadcastToLobby(wss, lobbyId, {
-      event: GAME_STATE_UPDATE,
+      event: 'GAME_STATE_UPDATE',
       state: lobby,
     })
   } catch (e) {

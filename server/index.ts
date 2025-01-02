@@ -1,11 +1,15 @@
 import http from 'http'
-import express, { Application } from 'express'
+import express, { Application, Request, Response } from 'express'
 import { initWebSockets } from './sockets'
 import { LOBBIES, removeStaleLobbies } from './sockets/handlers'
 import cors from 'cors'
 
 const app: Application = express()
 app.use(cors())
+
+app.get('/ping', (req: Request, res: Response) => {
+  res.send('pong')
+})
 
 const server = http.createServer(app)
 initWebSockets(server)
