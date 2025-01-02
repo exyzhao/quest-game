@@ -77,7 +77,6 @@ export default function GamePage() {
 
   if (!me || !me.role) {
     return <p>TODO ERROR2</p>
-    // ERROR
   }
   if (!currentLeader || !currentRule) {
     return (
@@ -207,6 +206,34 @@ export default function GamePage() {
         return red
       } else {
         return ''
+      }
+    }
+  }
+
+  const playerBackgroundColor = (playerId: string) => {
+    const blue = '60A5FA'
+    const red = 'F87171'
+    const gray = 'D6D3D1'
+    if (!role) {
+      return gray
+    }
+    if (playerId === id) {
+      if (EVIL_ROLES.includes(role)) {
+        return red
+      } else {
+        return blue
+      }
+    } else {
+      if (role === 'Cleric' && clericInfo?.firstLeader === playerId) {
+        return clericInfo.isGood ? blue : red
+      }
+      if (amuletInfo?.amuletUsedOn === playerId) {
+        return amuletInfo.isGood ? blue : red
+      }
+      if (knownEvils && knownEvils.includes(playerId)) {
+        return red
+      } else {
+        return gray
       }
     }
   }
@@ -557,7 +584,7 @@ export default function GamePage() {
               <Image
                 src={`https://api.dicebear.com/9.x/dylan/svg?seed=${encodeURIComponent(
                   player.name,
-                )}&scale=80&backgroundColor=29e051,619eff,ffa6e6,7074ff,58bffd,967aff,6b80ff,39e8c8,fe9cfa,ffb5cf,ffb0d5,63cb24,3cd623,2ce169,ffabdd,fea1ef,51d023,ffbfc7`}
+                )}&scale=80&backgroundColor=${playerBackgroundColor(player.id)}`}
                 alt={`Avatar of ${player.name}`}
                 width={64}
                 height={64}
