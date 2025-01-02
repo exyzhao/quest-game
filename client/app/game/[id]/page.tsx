@@ -21,7 +21,8 @@ export default function GamePage() {
   const { sendMessage, lobbyState } = useWebSocketContext()
   const pathname = usePathname()
   const lobbyId = pathname.split('/').pop() || ''
-  const { id, role, knownEvils, clericInfo, amuletInfo } = usePlayerContext()
+  const { id, role, knownEvils, clericInfo, hunterInfo, amuletInfo } =
+    usePlayerContext()
   const router = useRouter()
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
   const [tokenHolder, setTokenHolder] = useState<string | null>(null)
@@ -916,6 +917,17 @@ export default function GamePage() {
               {clericInfo.isGood ? 'good' : 'evil'}
             </span>
             .
+          </p>
+        </div>
+      )}
+      {/* Show unused good info to the Blind Hunter */}
+      {role === 'Blind Hunter' && hunterInfo && (
+        <div>
+          <h3>Blind Hunter Info:</h3>
+          <p>
+            The <span className="text-blue-500">{hunterInfo}</span> is an{' '}
+            <span className="text-blue-500">good</span> role that was not drawn
+            by any players.
           </p>
         </div>
       )}

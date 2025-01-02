@@ -7,5 +7,8 @@ export const SHOWS_AS_EVIL_ROLES = [
   'Blind Hunter',
   'Troublemaker',
 ]
-export const DISCUSSION_TIME_SECONDS = 15
+
+const env = process.env.NODE_ENV
+
+export const DISCUSSION_TIME_SECONDS = env === 'development' ? 15 : 300
 export const HUNTING_OPTION_SECONDS = 10

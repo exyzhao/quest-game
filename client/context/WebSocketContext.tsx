@@ -29,8 +29,14 @@ export const WebSocketProvider = ({
   const [isConnected, setIsConnected] = useState(false)
   const [lobbyState, setLobbyState] = useState<Lobby | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const { setId, setRole, setClericInfo, setKnownEvils, setAmuletInfo } =
-    usePlayerContext()
+  const {
+    setId,
+    setRole,
+    setClericInfo,
+    setHunterInfo,
+    setKnownEvils,
+    setAmuletInfo,
+  } = usePlayerContext()
 
   const host =
     process.env.NODE_ENV === 'production'
@@ -75,6 +81,12 @@ export const WebSocketProvider = ({
             }
             break
 
+          case 'HUNTER_INFO':
+            if (parsed.message) {
+              setHunterInfo(parsed.message)
+            }
+            break
+
           case 'AMULET_INFO':
             if (parsed.message) {
               setAmuletInfo(parsed.message)
@@ -101,7 +113,14 @@ export const WebSocketProvider = ({
     return () => {
       ws.current?.close()
     }
-  }, [setId, setRole, setKnownEvils, setClericInfo, setAmuletInfo])
+  }, [
+    setId,
+    setRole,
+    setKnownEvils,
+    setClericInfo,
+    setHunterInfo,
+    setAmuletInfo,
+  ])
 
   const sendMessage = (message: object) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
