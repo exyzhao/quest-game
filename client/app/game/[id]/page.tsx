@@ -164,7 +164,7 @@ export default function GamePage() {
               </div>
             ) : null}
             {rule.amulet ? (
-              <div className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-purple-400"></div>
+              <div className="absolute left-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-purple-400"></div>
             ) : null}
             <div className="text-center text-sm leading-4">
               {twoFailsRequired ? <p>2 fails required</p> : null}
@@ -654,6 +654,7 @@ export default function GamePage() {
                   : '#d9d9d9'
                 : '#d9d9d9',
               opacity: `${canPass ? '1' : '0.4'}`,
+              cursor: canPass ? 'pointer' : 'not-allowed',
             }}
           >
             Pass
@@ -670,6 +671,7 @@ export default function GamePage() {
                   : '#d9d9d9'
                 : '#d9d9d9',
               opacity: `${canFail ? '1' : '0.4'}`,
+              cursor: canFail ? 'pointer' : 'not-allowed',
             }}
           >
             Fail
