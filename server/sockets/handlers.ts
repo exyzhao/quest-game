@@ -527,6 +527,10 @@ export const handleSubmitQuest = (
 
       advancePhase(lobby)
 
+      if (lobby.phase !== 'THE_DISCUSSION' && lobby.phase !== 'GOOD_VICTORY') {
+        lobby.currentRound++
+      }
+
       if (lobby.phase === 'THE_DISCUSSION') {
         setTimeout(() => {
           if (lobby.phase === 'THE_DISCUSSION') {
@@ -546,8 +550,6 @@ export const handleSubmitQuest = (
             }, HUNTING_OPTION_SECONDS * 1000)
           }
         }, DISCUSSION_TIME_SECONDS * 1000)
-      } else {
-        lobby.currentRound++
       }
       broadcastToLobby(wss, lobbyId, {
         event: 'GAME_STATE_UPDATE',

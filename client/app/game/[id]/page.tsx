@@ -80,7 +80,12 @@ export default function GamePage() {
     // ERROR
   }
   if (!currentLeader || !currentRule) {
-    return <p>{JSON.stringify(lobbyState)}</p>
+    return (
+      <div>
+        <p>ERROR: no current leader or current rule</p>
+        <p>{JSON.stringify(lobbyState, null, '\t')}</p>
+      </div>
+    )
   }
   const isLeader = id === currentLeader?.id
 
