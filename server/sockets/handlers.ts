@@ -24,6 +24,8 @@ import {
 export const LOBBIES: Record<string, Lobby> = {}
 
 export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
+  const env = process.env.NODE_ENV
+  console.log('env: ' + env)
   // TEAM SELECTION
   const lobbyId = '1234'
   LOBBIES[lobbyId] = {
