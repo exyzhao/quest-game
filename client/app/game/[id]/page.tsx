@@ -562,8 +562,18 @@ export default function GamePage() {
                 height={64}
                 className={`rounded-full ${ringColor(player.id)}`}
                 style={{
-                  opacity: isPlayerClickable(player) ? '1' : '0.4',
-                  cursor: isPlayerClickable(player) ? 'pointer' : 'not-allowed',
+                  opacity:
+                    isPlayerClickable(player) ||
+                    phase === 'GOOD_VICTORY' ||
+                    phase === 'EVIL_VICTORY'
+                      ? '1'
+                      : '0.4',
+                  cursor:
+                    phase === 'GOOD_VICTORY' || phase === 'EVIL_VICTORY'
+                      ? 'default'
+                      : isPlayerClickable(player)
+                        ? 'pointer'
+                        : 'not-allowed',
                 }}
                 onClick={() => {
                   if (isPlayerClickable(player)) {
