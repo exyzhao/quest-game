@@ -75,9 +75,12 @@ export default function GamePage() {
     (rule: QuestRules) => rule.round === lobbyState.currentRound,
   )
 
-  if (!me || !me.role || !currentLeader || !currentRule) {
+  if (!me || !me.role) {
     return <p>TODO ERROR2</p>
     // ERROR
+  }
+  if (!currentLeader || !currentRule) {
+    return <p>TODO ERROR3</p>
   }
   const isLeader = id === currentLeader?.id
 
