@@ -24,9 +24,10 @@ export interface Lobby {
   disconnectedPlayers: Player[] // Track players who disconnected during the game
   clericInfo?: { firstLeader: string; isGood: boolean }
   knownEvils?: string[] // Player ids
+  unusedGoodRole?: string
   veterans: string[] // Player ids
   rules?: QuestRules[]
-  possibleRoles?: string[]
+  allRoles?: string[]
   questHistory: QuestResult[]
   amuletHistory: AmuletResult[]
   currentLeader: string | null

@@ -73,9 +73,7 @@ export const handleDebugState = (ws: MyWebSocket, wss: MyWebSocketServer) => {
     magicTokenHolder: null,
     questSubmissions: [],
     rules: getQuestRules(6),
-    possibleRoles: getRolesForPlayerCount(6).roles.concat(
-      getRolesForPlayerCount(6).unselectedRoles,
-    ),
+    allRoles: getRolesForPlayerCount(6).allRoles,
     currentLeader: 'player-1',
     upcomingLeader: null,
     amuletHolder: null,
@@ -296,10 +294,10 @@ export const handleStartGame = (
   lobby.rules = getQuestRules(lobby.players.length)
 
   try {
-    let allRoles = getRolesForPlayerCount(playerCount)
-    lobby.possibleRoles = allRoles.roles.concat(allRoles.unselectedRoles)
+    let roles = getRolesForPlayerCount(playerCount)
+    lobby.allRoles = roles.allRoles
 
-    const shuffledRoles = R.shuffle(allRoles.roles)
+    const shuffledRoles = R.shuffle(roles.selectedRoles)
     lobby.players = lobby.players.map((player, index) => ({
       ...player,
       role: shuffledRoles[index],
@@ -373,6 +371,25 @@ export const handleStartGame = (
         message: evilIds,
       })
     })
+
+    // In 4 or 5 player games, Blind Hunter knows the unused good role
+    if (lobby.players.length <= 5) {
+      const blindHunter = lobby.players.find(
+        (player) => player.role === 'Blind Hunter',
+      )
+      if (!blindHunter) {
+        return ws.send(
+          JSON.stringify({ event: 'ERROR', error: 'No Blind Hunter found.' }),
+        )
+      }
+
+      lobby.unusedGoodRole = roles.unusedRole
+
+      sendPrivateMessage(wss, blindHunter.id, {
+        event: 'HUNTER_INFO',
+        message: roles.unusedRole,
+      })
+    }
 
     advancePhase(lobby)
     broadcastToLobby(wss, lobbyId, {

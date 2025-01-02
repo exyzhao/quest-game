@@ -2,8 +2,9 @@ import * as R from 'remeda'
 import { EVIL_ROLES } from '../constants'
 
 interface RolesResult {
-  roles: string[]
-  unselectedRoles: string[]
+  selectedRoles: string[]
+  allRoles: string[]
+  unusedRole: string
 }
 
 export const isPlayerEvil = (role: string): boolean => {
@@ -15,38 +16,49 @@ export const getRolesForPlayerCount = (playerCount: number): RolesResult => {
     case 4: {
       const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
       const evilRoles = ['Morgan le Fey', 'Blind Hunter']
+
       const shuffledGood = R.shuffle(goodRoles)
-      // We only select 2 of the good roles
       const selectedGood = shuffledGood.slice(0, 2)
-      // The leftover good role is the one the Blind Hunter can see is missing
-      const unselectedGood = shuffledGood.slice(2)
-      return {
-        roles: selectedGood.concat(evilRoles),
-        unselectedRoles: unselectedGood,
-      }
+      const unusedRole = shuffledGood.slice(2)[0]
+
+      // All roles available for 4 players (ordered)
+      const allRoles = [...goodRoles, ...evilRoles]
+
+      // Selected roles: 2 good + all evil roles
+      const selectedRoles = [...selectedGood, ...evilRoles]
+
+      return { selectedRoles, allRoles, unusedRole }
     }
+
     case 5: {
       const goodRoles = ['Cleric', 'Youth', 'Loyal Servant of Arthur']
       const evilRoles = ['Morgan le Fey', 'Blind Hunter', 'Minion of Mordred']
+
       const shuffledGood = R.shuffle(goodRoles)
       const selectedGood = shuffledGood.slice(0, 2)
-      const unselectedGood = shuffledGood.slice(2)
-      return {
-        roles: selectedGood.concat(evilRoles),
-        unselectedRoles: unselectedGood,
-      }
+      const unusedRole = shuffledGood.slice(2)[0]
+
+      const allRoles = [...goodRoles, ...evilRoles]
+      const selectedRoles = [...selectedGood, ...evilRoles]
+
+      return { selectedRoles, allRoles, unusedRole }
     }
+
     case 6: {
       const evilRoles = ['Morgan le Fey', 'Blind Hunter', 'Minion of Mordred']
       const goodRoles = ['Cleric', 'Duke']
+
+      // Shuffle special roles and select 1
       const specialRoles = R.shuffle(['Youth', 'Troublemaker'])
       const selectedSpecial = specialRoles[0]
-      const unselectedSpecial = specialRoles[1]
-      return {
-        roles: [...evilRoles, ...goodRoles, selectedSpecial],
-        unselectedRoles: [unselectedSpecial],
-      }
+      const unusedRole = specialRoles[1]
+
+      const allRoles = [...evilRoles, ...goodRoles, ...specialRoles]
+      const selectedRoles = [...evilRoles, ...goodRoles, selectedSpecial]
+
+      return { selectedRoles, allRoles, unusedRole }
     }
+
     case 7: {
       const evilRoles = [
         'Morgan le Fey',
@@ -55,14 +67,17 @@ export const getRolesForPlayerCount = (playerCount: number): RolesResult => {
         'Minion of Mordred',
       ]
       const goodRoles = ['Cleric', 'Duke']
+
       const specialRoles = R.shuffle(['Youth', 'Troublemaker'])
       const selectedSpecial = specialRoles[0]
-      const unselectedSpecial = specialRoles[1]
-      return {
-        roles: [...evilRoles, ...goodRoles, selectedSpecial],
-        unselectedRoles: [unselectedSpecial],
-      }
+      const unusedRole = specialRoles[1]
+
+      const allRoles = [...evilRoles, ...goodRoles, ...specialRoles]
+      const selectedRoles = [...evilRoles, ...goodRoles, selectedSpecial]
+
+      return { selectedRoles, allRoles, unusedRole }
     }
+
     case 8: {
       const evilRoles = [
         'Morgan le Fey',
@@ -71,14 +86,17 @@ export const getRolesForPlayerCount = (playerCount: number): RolesResult => {
         'Minion of Mordred',
       ]
       const goodRoles = ['Cleric', 'Duke', 'Loyal Servant of Arthur']
+
       const specialRoles = R.shuffle(['Youth', 'Troublemaker'])
       const selectedSpecial = specialRoles[0]
-      const unselectedSpecial = specialRoles[1]
-      return {
-        roles: [...evilRoles, ...goodRoles, selectedSpecial],
-        unselectedRoles: [unselectedSpecial],
-      }
+      const unusedRole = specialRoles[1]
+
+      const allRoles = [...evilRoles, ...goodRoles, ...specialRoles]
+      const selectedRoles = [...evilRoles, ...goodRoles, selectedSpecial]
+
+      return { selectedRoles, allRoles, unusedRole }
     }
+
     case 9: {
       const evilRoles = [
         'Morgan le Fey',
@@ -88,14 +106,17 @@ export const getRolesForPlayerCount = (playerCount: number): RolesResult => {
         'Minion of Mordred',
       ]
       const goodRoles = ['Cleric', 'Archduke', 'Loyal Servant of Arthur']
+
       const specialRoles = R.shuffle(['Youth', 'Troublemaker'])
       const selectedSpecial = specialRoles[0]
-      const unselectedSpecial = specialRoles[1]
-      return {
-        roles: [...evilRoles, ...goodRoles, selectedSpecial],
-        unselectedRoles: [unselectedSpecial],
-      }
+      const unusedRole = specialRoles[1]
+
+      const allRoles = [...evilRoles, ...goodRoles, ...specialRoles]
+      const selectedRoles = [...evilRoles, ...goodRoles, selectedSpecial]
+
+      return { selectedRoles, allRoles, unusedRole }
     }
+
     case 10: {
       const evilRoles = [
         'Morgan le Fey',
@@ -110,14 +131,17 @@ export const getRolesForPlayerCount = (playerCount: number): RolesResult => {
         'Archduke',
         'Loyal Servant of Arthur',
       ]
+
       const specialRoles = R.shuffle(['Youth', 'Troublemaker'])
       const selectedSpecial = specialRoles[0]
-      const unselectedSpecial = specialRoles[1]
-      return {
-        roles: [...evilRoles, ...goodRoles, selectedSpecial],
-        unselectedRoles: [unselectedSpecial],
-      }
+      const unusedRole = specialRoles[1]
+
+      const allRoles = [...evilRoles, ...goodRoles, ...specialRoles]
+      const selectedRoles = [...evilRoles, ...goodRoles, selectedSpecial]
+
+      return { selectedRoles, allRoles, unusedRole }
     }
+
     default:
       throw new Error('Unsupported number of players')
   }

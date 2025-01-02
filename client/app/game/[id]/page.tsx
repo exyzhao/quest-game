@@ -852,7 +852,7 @@ export default function GamePage() {
               <div>
                 <p>{getPlayerFromId(hunted[0].playerId)?.name}</p>
                 <div className="flex gap-1">
-                  {lobbyState.possibleRoles
+                  {lobbyState.allRoles
                     ?.filter((role) => isRoleGood(role))
                     .map((role) => (
                       <button
@@ -872,7 +872,7 @@ export default function GamePage() {
               <div>
                 <p>{getPlayerFromId(hunted[1].playerId)?.name}</p>
                 <div className="flex gap-1">
-                  {lobbyState.possibleRoles
+                  {lobbyState.allRoles
                     ?.filter((role) => isRoleGood(role))
                     .map((role) => (
                       <button
