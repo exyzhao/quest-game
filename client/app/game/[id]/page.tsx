@@ -27,9 +27,10 @@ export default function GamePage() {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
   const [tokenHolder, setTokenHolder] = useState<string | null>(null)
   const [passQuest, setPassQuest] = useState<boolean | null>(null)
-  const [isQuestCardSubmitted, setIsQuestCardSubmited] =
+  const [isQuestCardSubmitted, setIsQuestCardSubmitted] =
     useState<boolean>(false)
   const [pointed, setPointed] = useState<string[]>([])
+  const [isPointedSubmitted, setIsPointedSubmitted] = useState<boolean>(false)
 
   const env = process.env.NODE_ENV
 
@@ -46,7 +47,7 @@ export default function GamePage() {
     setSelectedPlayers([])
     setTokenHolder(null)
     setPassQuest(null)
-    setIsQuestCardSubmited(false)
+    setIsQuestCardSubmitted(false)
   }
 
   // Game code
@@ -419,6 +420,10 @@ export default function GamePage() {
     })
   }
 
+  const confirmPointed = () => {
+    setIsPointedSubmitted(true)
+  }
+
   // Mirrors isPlayerClickable
   const handlePlayerClick = (player: Player) => {
     if (isLeader && phase === 'TEAM_SELECTION') {
@@ -449,7 +454,7 @@ export default function GamePage() {
     ) {
       updateHunted(player.id)
     }
-    if (phase === 'GOODS_LAST_CHANCE') {
+    if (phase === 'GOODS_LAST_CHANCE' && !isPointedSubmitted) {
       updatePointed(player.id)
     }
   }
@@ -484,7 +489,7 @@ export default function GamePage() {
     ) {
       return true
     }
-    if (phase === 'GOODS_LAST_CHANCE') {
+    if (phase === 'GOODS_LAST_CHANCE' && !isPointedSubmitted) {
       return true
     }
     return false
@@ -712,7 +717,7 @@ export default function GamePage() {
                 playerId: id,
                 isQuestCardPass: passQuest,
               })
-              setIsQuestCardSubmited(true)
+              setIsQuestCardSubmitted(true)
             }}
             className={`${passQuest === null || isQuestCardSubmitted ? 'opacity-40' : null}`}
             disabled={passQuest === null || isQuestCardSubmitted}
@@ -963,6 +968,17 @@ export default function GamePage() {
               )}
           </div>
         )}
+        {phase === 'GOODS_LAST_CHANCE' &&
+          pointed.length === 2 &&
+          !EVIL_ROLES.includes(me.role) && (
+            <button
+              onClick={confirmPointed}
+              className={`${isPointedSubmitted ? 'opacity-40' : null}`}
+              disabled={isPointedSubmitted}
+            >
+              Confirm Selection
+            </button>
+          )}
       </div>
 
       <QuestResolution />
