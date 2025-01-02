@@ -13,7 +13,7 @@ button {
 }
 
 button:disabled {
-  background-color: #f87171;
+  opacity: 0.4;
 }
 
 input {

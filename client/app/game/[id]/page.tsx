@@ -385,36 +385,13 @@ export default function GamePage() {
   }
 
   const confirmTeam = () => {
-    if (selectedPlayers.length !== currentRule.requiredPlayers) {
-      alert(`Please select exactly ${currentRule.requiredPlayers} players.`)
-      return
-    }
-    if (!tokenHolder) {
-      alert('Please assign the magic token to one of the selected players.')
-      return
-    }
-
     sendMessage({
       event: 'CONFIRM_TEAM',
       lobbyId,
     })
   }
 
-  // Confirm the leader
   const confirmLeader = () => {
-    if (!lobbyState.upcomingLeader) {
-      alert('Please assign the next leader.')
-      return
-    }
-    if (currentRule.amulet && !lobbyState.amuletHolder) {
-      alert('Please assign the next amulet holder.')
-      return
-    }
-    if (lobbyState.upcomingLeader === lobbyState.amuletHolder) {
-      alert('Next leader and amulet holder must be different players.')
-      return
-    }
-
     sendMessage({
       event: 'CONFIRM_LEADER',
       lobbyId,
@@ -422,11 +399,6 @@ export default function GamePage() {
   }
 
   const confirmAmuletUsage = () => {
-    if (!lobbyState.amuletUsedOn) {
-      alert(`Please select a player to use the amulet on.`)
-      return
-    }
-
     sendMessage({
       event: 'CONFIRM_AMULET_USAGE',
       lobbyId,
@@ -679,7 +651,11 @@ export default function GamePage() {
         <p>Play your quest card</p>
         <div className="flex gap-4">
           <div
-            onClick={canPass ? () => setPassQuest(true) : undefined}
+            onClick={
+              canPass && !isQuestCardSubmitted
+                ? () => setPassQuest(true)
+                : undefined
+            }
             className="p-2"
             style={{
               color: passQuest ? 'white' : undefined,
@@ -688,14 +664,19 @@ export default function GamePage() {
                   ? '#3B82F6'
                   : '#d9d9d9'
                 : '#d9d9d9',
-              opacity: `${canPass ? '1' : '0.4'}`,
-              cursor: canPass ? 'pointer' : 'not-allowed',
+              opacity: `${canPass && !isQuestCardSubmitted ? '1' : '0.4'}`,
+              cursor:
+                canPass && !isQuestCardSubmitted ? 'pointer' : 'not-allowed',
             }}
           >
             Pass
           </div>
           <div
-            onClick={canFail ? () => setPassQuest(false) : undefined}
+            onClick={
+              canFail && !isQuestCardSubmitted
+                ? () => setPassQuest(false)
+                : undefined
+            }
             className="p-2"
             style={{
               // passQuest can be null
@@ -705,14 +686,15 @@ export default function GamePage() {
                   ? '#EF4444'
                   : '#d9d9d9'
                 : '#d9d9d9',
-              opacity: `${canFail ? '1' : '0.4'}`,
-              cursor: canFail ? 'pointer' : 'not-allowed',
+              opacity: `${canFail && !isQuestCardSubmitted ? '1' : '0.4'}`,
+              cursor:
+                canFail && !isQuestCardSubmitted ? 'pointer' : 'not-allowed',
             }}
           >
             Fail
           </div>
         </div>
-        <div>
+        {passQuest !== null && (
           <button
             onClick={() => {
               sendMessage({
@@ -728,7 +710,7 @@ export default function GamePage() {
           >
             {isQuestCardSubmitted ? 'Submission confirmed' : 'Confirm'}
           </button>
-        </div>
+        )}
       </div>
     )
   }
@@ -885,21 +867,32 @@ export default function GamePage() {
         <PlayerList />
       </div>
       <div>
-        {isLeader && phase === 'TEAM_SELECTION' ? (
-          <button className="bg-green-300" onClick={confirmTeam}>
-            Confirm Team
-          </button>
-        ) : null}
-        {isLeader && phase === 'LEADER_SELECTION' ? (
-          <button className="bg-green-300" onClick={confirmLeader}>
-            Confirm Leader
-          </button>
-        ) : null}
-        {phase === 'AMULET_CHECK' && lobbyState.amuletHolder === id ? (
-          <button className="bg-green-300" onClick={confirmAmuletUsage}>
-            Confirm Amulet
-          </button>
-        ) : null}
+        {phase === 'TEAM_SELECTION' &&
+          isLeader &&
+          selectedPlayers.length === currentRule.requiredPlayers &&
+          tokenHolder && (
+            <button className="bg-green-300" onClick={confirmTeam}>
+              Confirm Team
+            </button>
+          )}
+        {phase === 'LEADER_SELECTION' &&
+          isLeader &&
+          lobbyState.upcomingLeader &&
+          (!currentRule.amulet || lobbyState.amuletHolder) &&
+          lobbyState.upcomingLeader !== lobbyState.amuletHolder && (
+            <button className="bg-green-300" onClick={confirmLeader}>
+              {currentRule.amulet
+                ? 'Confirm Leader and Amulet Holder'
+                : 'Confirm Leader'}
+            </button>
+          )}
+        {phase === 'AMULET_CHECK' &&
+          lobbyState.amuletHolder === id &&
+          lobbyState.amuletUsedOn && (
+            <button className="bg-green-300" onClick={confirmAmuletUsage}>
+              Confirm Amulet
+            </button>
+          )}
         {phase === 'HUNTING_OPTION' && me.role === 'Blind Hunter' && (
           <button className="bg-green-300" onClick={startTheHunt}>
             Begin the Hunt
