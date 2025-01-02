@@ -80,7 +80,7 @@ export default function GamePage() {
     // ERROR
   }
   if (!currentLeader || !currentRule) {
-    return <p>TODO ERROR3</p>
+    return <p>{JSON.stringify(lobbyState)}</p>
   }
   const isLeader = id === currentLeader?.id
 
@@ -973,8 +973,6 @@ export default function GamePage() {
           </p>
         </div>
       )}
-
-      {lobbyId === 'abcd' && <p>{JSON.stringify(lobbyState)}</p>}
     </main>
   )
 }
