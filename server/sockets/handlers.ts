@@ -752,6 +752,127 @@ export const handleConfirmHunted = (
   }
 }
 
+export const handleSubmitPointed = (
+  ws: MyWebSocket,
+  message: { lobbyId: string; playerId: string; pointed: string[] },
+  wss: MyWebSocketServer,
+) => {
+  const { lobbyId, playerId, pointed } = message
+  const lobby = LOBBIES[lobbyId]
+  updateLobbyLastActivity(lobby)
+  if (!lobby) {
+    ws.send(JSON.stringify({ event: 'ERROR', error: 'Lobby not found.' }))
+    return
+  }
+  const player = lobby.players.find((p) => p.id === playerId)
+  if (!player) {
+    ws.send(
+      JSON.stringify({
+        event: 'ERROR',
+        error: `Player ${playerId} not found.`,
+      }),
+    )
+    return
+  }
+  player.pointers = pointed
+
+  const goodPlayers = lobby.players.filter(
+    (p) => p.role && !EVIL_ROLES.includes(p.role),
+  )
+
+  if (!goodPlayers.every((p) => p.pointers)) {
+    return
+  }
+
+  // Track evil players' pointed at counts and total pointers at good
+  const evilPlayers = lobby.players.filter(
+    (p) => p.role && EVIL_ROLES.includes(p.role),
+  )
+  const goodPlayersIds = new Set(goodPlayers.map((p) => p.id))
+
+  let totalPointsAtGood = 0
+  let evilsPointedAt: Map<string, number> = new Map()
+
+  goodPlayers.forEach((goodPlayer) =>
+    goodPlayer.pointers?.forEach((p) => {
+      if (goodPlayersIds.has(p)) {
+        totalPointsAtGood++
+      } else {
+        if (evilsPointedAt.has(p)) {
+          const currentCount = evilsPointedAt.get(p) || 0
+          evilsPointedAt.set(p, currentCount + 1)
+        } else {
+          evilsPointedAt.set(p, 1)
+        }
+      }
+    }),
+  )
+
+  const evilPlayersIds = new Set(evilPlayers.map((p) => p.id))
+  const evilsPointedAtIds = new Set(evilsPointedAt.keys())
+  const evilsNotPointedAt = [...evilPlayersIds].filter(
+    (id) => !evilsPointedAtIds.has(id),
+  )
+
+  const isDukePresent = lobby.players.some((p) => p.role === 'Duke')
+  const isArchdukePresent = lobby.players.some((p) => p.role === 'Archduke')
+
+  const victory = determineVictoryFromPointing(
+    evilsNotPointedAt.length,
+    totalPointsAtGood,
+    isDukePresent,
+    isArchdukePresent,
+  )
+  lobby.phase = victory
+
+  broadcastToLobby(wss, lobbyId, {
+    event: 'GAME_STATE_UPDATE',
+    state: lobby,
+  })
+}
+
+// Proof of correctness in Figma
+function determineVictoryFromPointing(
+  evilsNotPointedAtCount: number,
+  totalPointsAtGood: number,
+  isDukePresent: boolean,
+  isArchdukePresent: boolean,
+): 'GOOD_VICTORY' | 'EVIL_VICTORY' {
+  // Case 1: >1 evil is not pointed at
+  if (evilsNotPointedAtCount > 1) {
+    return 'EVIL_VICTORY'
+  }
+
+  // Case 2: Exactly 1 evil not pointed at
+  if (evilsNotPointedAtCount === 1) {
+    if (!isArchdukePresent) {
+      return 'EVIL_VICTORY'
+    }
+    // isArchdukePresent === true
+    if (totalPointsAtGood < 2) {
+      return 'GOOD_VICTORY'
+    }
+    if (totalPointsAtGood > 2) {
+      return 'EVIL_VICTORY'
+    }
+    // totalPointsAtGood === 2
+    return isDukePresent ? 'GOOD_VICTORY' : 'EVIL_VICTORY'
+  }
+
+  // Case 3: evilsNotPointedAtCount === 0 (all evils covered)
+  if (totalPointsAtGood < 1) {
+    return 'GOOD_VICTORY'
+  }
+  if (totalPointsAtGood > 2) {
+    return 'EVIL_VICTORY'
+  }
+  if (totalPointsAtGood === 1) {
+    return isDukePresent || isArchdukePresent ? 'GOOD_VICTORY' : 'EVIL_VICTORY'
+  }
+  // totalPointsAtGood === 2
+  return isDukePresent && isArchdukePresent ? 'GOOD_VICTORY' : 'EVIL_VICTORY'
+}
+
 export const resetLobby = (
   ws: MyWebSocket,
   message: { lobbyId: string },

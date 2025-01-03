@@ -16,6 +16,7 @@ import {
   handleHuntStarted,
   handleUpdateHunted,
   handleConfirmHunted,
+  handleSubmitPointed,
 } from './handlers'
 import { IncomingMessage } from 'http'
 
@@ -74,6 +75,9 @@ export const initWebSockets = (server: import('http').Server) => {
           break
         case 'CONFIRM_HUNTED':
           handleConfirmHunted(ws, data, wss)
+          break
+        case 'SUBMIT_POINTED':
+          handleSubmitPointed(ws, data, wss)
           break
 
         default:

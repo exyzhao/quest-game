@@ -421,6 +421,12 @@ export default function GamePage() {
   }
 
   const confirmPointed = () => {
+    sendMessage({
+      event: 'SUBMIT_POINTED',
+      lobbyId,
+      playerId: id,
+      pointed: pointed,
+    })
     setIsPointedSubmitted(true)
   }
 
