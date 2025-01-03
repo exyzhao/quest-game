@@ -990,7 +990,7 @@ export default function GamePage() {
       {(phase === 'GOOD_VICTORY' || phase === 'EVIL_VICTORY') &&
         lobbyState.players.some((p) => p.pointers) && (
           <div className="flex flex-col">
-            <p>Good's Last Chance</p>
+            <p>Good&apos;s Last Chance</p>
             {lobbyState.players.map((p) => {
               if (p.pointers && p.pointers.length === 2) {
                 const p1 = getPlayerFromId(p.pointers[0])
