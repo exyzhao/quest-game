@@ -65,6 +65,8 @@ export default function GamePage() {
   }
 
   const { phase, hunted, discussionStartTime } = lobbyState
+  const textBlue = 'text-blue-500'
+  const textRed = 'text-red-700'
 
   // Helpers
   const getPlayerFromId = (playerId: string) => {
@@ -185,26 +187,24 @@ export default function GamePage() {
 
   // Set color of another player's name for this user
   const playerNameColor = (playerId: string) => {
-    const blue = 'text-blue-500'
-    const red = 'text-red-700'
     if (!role) {
       return 'gray-100'
     }
     if (playerId === id) {
       if (EVIL_ROLES.includes(role)) {
-        return red
+        return textRed
       } else {
-        return blue
+        return textBlue
       }
     } else {
       if (role === 'Cleric' && clericInfo?.firstLeader === playerId) {
-        return clericInfo.isGood ? blue : red
+        return clericInfo.isGood ? textBlue : textRed
       }
       if (amuletInfo?.amuletUsedOn === playerId) {
-        return amuletInfo.isGood ? blue : red
+        return amuletInfo.isGood ? textBlue : textRed
       }
       if (knownEvils && knownEvils.includes(playerId)) {
-        return red
+        return textRed
       } else {
         return ''
       }
@@ -986,6 +986,35 @@ export default function GamePage() {
             </button>
           )}
       </div>
+      {/* Show results of pointing */}
+      {(phase === 'GOOD_VICTORY' || phase === 'EVIL_VICTORY') &&
+        lobbyState.players.some((p) => p.pointers) && (
+          <div className="flex flex-col">
+            <p>Good's Last Chance</p>
+            {lobbyState.players.map((p) => {
+              if (p.pointers && p.pointers.length === 2) {
+                const p1 = getPlayerFromId(p.pointers[0])
+                const p2 = getPlayerFromId(p.pointers[1])
+                return (
+                  <p key={p.id}>
+                    <span className={textBlue}>{p.name}</span> →{' '}
+                    <span
+                      className={`${isRoleGood(p1?.role ?? '') ? textBlue : textRed}`}
+                    >
+                      {p1?.name}
+                    </span>{' '}
+                    and{' '}
+                    <span
+                      className={`${isRoleGood(p2?.role ?? '') ? textBlue : textRed}`}
+                    >
+                      {getPlayerFromId(p.pointers[1])?.name}
+                    </span>
+                  </p>
+                )
+              }
+            })}
+          </div>
+        )}
 
       <QuestResolution />
 
